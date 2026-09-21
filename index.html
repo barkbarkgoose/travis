@@ -1,0 +1,199 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+<title>Travis's Recovery</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,400;9..144,500;9..144,600;9..144,700&family=Public+Sans:wght@400;500;600;700&family=IBM+Plex+Mono:wght@500;600&display=swap" rel="stylesheet">
+<script src="https://cdn.tailwindcss.com"></script>
+<style>
+  :root{
+    --bg:#f5f3ec;
+    --surface:#ffffff;
+    --surface-2:#edeade;
+    --ink:#20302e;
+    --muted:#5e6f6b;
+    --line:#e1ddcd;
+    --accent:#2a6e66;
+    --accent-ink:#ffffff;
+    --gold:#a3782e;
+    --ok:#3f7a4f;
+    --ok-bg:#e7f1e6;
+    --warn:#b04a2c;
+    --warn-bg:#f6e6dd;
+    --shadow:0 1px 2px rgba(20,30,28,.06), 0 10px 28px -14px rgba(20,30,28,.22);
+    color-scheme: light;
+  }
+  body{ margin:0; background:var(--bg); color:var(--ink); font-family:'Public Sans',ui-sans-serif,system-ui,-apple-system,sans-serif; }
+  .font-display{ font-family:'Fraunces',ui-serif,Georgia,'Times New Roman',serif; }
+  .font-mono{ font-family:'IBM Plex Mono',ui-monospace,SFMono-Regular,Menlo,monospace; }
+  h1,h2,h3{ text-wrap:balance; }
+  .icon{ width:1.15em; height:1.15em; stroke:currentColor; fill:none; stroke-width:1.8; stroke-linecap:round; stroke-linejoin:round; flex:none; }
+  .timeline-item{ position:relative; padding-left:2rem; }
+  .timeline-item::before{ content:""; position:absolute; left:.3rem; top:.4rem; width:.6rem; height:.6rem; border-radius:999px; background:var(--accent); box-shadow:0 0 0 4px var(--surface); }
+  .timeline-item::after{ content:""; position:absolute; left:.55rem; top:1rem; bottom:-1.75rem; width:1px; background:var(--line); }
+  .timeline-item:last-child::after{ display:none; }
+  a{ color:var(--accent); }
+  ::selection{ background:var(--accent); color:var(--accent-ink); }
+</style>
+</head>
+<body>
+
+<div class="min-h-full" style="background:var(--bg);">
+
+  <!-- Top bar -->
+  <header class="sticky z-10 border-b" style="top:env(safe-area-inset-top,0px); background:color-mix(in srgb, var(--bg) 88%, transparent); border-color:var(--line); backdrop-filter:blur(8px);">
+    <div class="max-w-3xl mx-auto px-4 sm:px-6 py-3 flex items-center justify-between gap-3">
+      <span class="font-display text-[15px] sm:text-base font-medium tracking-tight" style="color:var(--ink);">Travis's Recovery</span>
+      <span class="text-xs sm:text-sm font-mono" style="color:var(--muted);">Updated Sep 21, 2026</span>
+    </div>
+  </header>
+
+  <main class="max-w-3xl mx-auto px-4 sm:px-6">
+
+    <!-- Hero -->
+    <section class="pt-10 sm:pt-14 pb-8">
+      <div class="inline-flex items-center gap-2 rounded-full px-3 py-1 text-xs font-semibold tracking-wide uppercase" style="background:var(--warn-bg); color:var(--warn);">
+        <span class="w-1.5 h-1.5 rounded-full" style="background:var(--warn);"></span>
+        In the ICU &mdash; condition stabilizing
+      </div>
+      <h1 class="font-display mt-4 text-4xl sm:text-5xl font-semibold leading-[1.05]" style="color:var(--ink);">
+        Travis was hit by a truck while walking to church.<br class="hidden sm:block"> Here's where things stand.
+      </h1>
+      <p class="mt-4 text-base sm:text-lg max-w-xl" style="color:var(--muted);">
+        This page is for family and friends who want to know how Travis is doing, where he is, and how to help.
+      </p>
+    </section>
+
+    <!-- Current status card -->
+    <section id="status" class="pb-10">
+      <div class="rounded-2xl p-5 sm:p-7" style="background:var(--surface); box-shadow:var(--shadow); border:1px solid var(--line);">
+        <div class="flex items-center gap-2 mb-5">
+          <svg class="icon" style="color:var(--accent);" viewBox="0 0 24 24"><path d="M12 21s-7.5-5.2-10-9.8C0.3 7.6 2 3.5 6 3c2.3-.3 4.2 1 6 3.2C13.8 4 15.7 2.7 18 3c4 .5 5.7 4.6 4 8.2-2.5 4.6-10 9.8-10 9.8z"/></svg>
+          <h2 class="font-display text-xl sm:text-2xl font-semibold" style="color:var(--ink);">Where he is right now</h2>
+        </div>
+
+        <div class="grid sm:grid-cols-2 gap-5 sm:gap-6">
+          <div class="flex items-start gap-3">
+            <svg class="icon mt-0.5" style="color:var(--muted);" viewBox="0 0 24 24"><path d="M12 22s7-7.4 7-13a7 7 0 1 0-14 0c0 5.6 7 13 7 13z"/><circle cx="12" cy="9" r="2.5"/></svg>
+            <div>
+              <div class="text-xs font-semibold uppercase tracking-wide" style="color:var(--muted);">Hospital &amp; room</div>
+              <div class="mt-1 font-medium" style="color:var(--ink);">Utah Valley Hospital &mdash; Provo</div>
+              <div class="font-mono text-sm mt-0.5" style="color:var(--ink);">Pedersen Tower, Room 424</div>
+            </div>
+          </div>
+
+          <div class="flex items-start gap-3">
+            <svg class="icon mt-0.5" style="color:var(--muted);" viewBox="0 0 24 24"><rect x="4" y="10" width="16" height="11" rx="2"/><path d="M8 10V7a4 4 0 0 1 8 0v3"/></svg>
+            <div>
+              <div class="text-xs font-semibold uppercase tracking-wide" style="color:var(--muted);">Door code</div>
+              <div class="mt-1 font-mono text-lg font-semibold tracking-wider" style="color:var(--ink);">12789 #</div>
+              <div class="text-sm mt-0.5" style="color:var(--muted);">Needed to get onto the ICU floor</div>
+            </div>
+          </div>
+        </div>
+
+        <div class="mt-6 pt-5" style="border-top:1px solid var(--line);">
+          <div class="flex items-start gap-3">
+            <svg class="icon mt-0.5" style="color:var(--gold);" viewBox="0 0 24 24"><circle cx="8" cy="8" r="3"/><circle cx="17" cy="9" r="2.5"/><path d="M2 21v-1a5 5 0 0 1 5-5h2a5 5 0 0 1 5 5v1"/><path d="M15 21v-.5a4 4 0 0 1 4-4h0a4 4 0 0 1 3 1.4"/></svg>
+            <div>
+              <div class="text-xs font-semibold uppercase tracking-wide" style="color:var(--muted);">Visiting</div>
+              <p class="mt-1 text-sm sm:text-base" style="color:var(--ink);">
+                Please keep it to <strong>2&ndash;3 visitors at a time</strong> in the room. If more people show up, we just ask that
+                everyone be respectful of the nurses and cycle in and out rather than crowding the hallway.
+              </p>
+              <p class="mt-2 text-sm" style="color:var(--muted);">
+                This will probably ease up once Travis is moved out of the ICU &mdash; we just don't know yet when that will be.
+              </p>
+              <p class="mt-3 text-sm">
+                <a href="https://docs.google.com/spreadsheets/d/1UjQWNIcItN5cS5NsMN_Ek8chb70qzbu7s5NcqC_RCRg/edit?gid=0#gid=0" target="_blank" rel="noopener" class="font-semibold underline underline-offset-2">Sign up to visit &rarr;</a>
+              </p>
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- What happened -->
+    <section id="what-happened" class="py-10" style="border-top:1px solid var(--line);">
+      <h2 class="font-display text-2xl sm:text-3xl font-semibold" style="color:var(--ink);">What happened</h2>
+      <p class="mt-4 leading-relaxed" style="color:var(--ink);">
+        On the morning of <strong>September 20</strong>, around <strong>9:24&nbsp;a.m.</strong>, Travis was hit by a vehicle while walking
+        to church. We suspect the driver was drunk. Neighbors found him wedged against a fence and called paramedics, who got him to
+        Utah Valley Hospital.
+      </p>
+      <p class="mt-3 text-sm">
+        <a href="https://www.ksl.com/article/51626684/intoxicated-driver-arrested-in-hit-and-run-crash-with-pedestrian-in-utah-county" target="_blank" rel="noopener" class="font-semibold underline underline-offset-2">Related news coverage &rarr;</a>
+      </p>
+    </section>
+
+    <!-- Injuries & plan -->
+    <section id="injuries" class="py-10" style="border-top:1px solid var(--line);">
+      <h2 class="font-display text-2xl sm:text-3xl font-semibold" style="color:var(--ink);">Injuries &amp; the plan ahead</h2>
+
+      <div class="mt-5 grid sm:grid-cols-2 gap-3">
+        <div class="rounded-xl p-4" style="background:var(--surface); border:1px solid var(--line);">
+          <div class="text-sm font-semibold" style="color:var(--ink);">6 broken ribs</div>
+        </div>
+        <div class="rounded-xl p-4" style="background:var(--surface); border:1px solid var(--line);">
+          <div class="text-sm font-semibold" style="color:var(--ink);">Dislocated shoulder</div>
+          <div class="text-xs mt-1" style="color:var(--muted);">Surgery planned, after the knee</div>
+        </div>
+        <div class="rounded-xl p-4" style="background:var(--surface); border:1px solid var(--line);">
+          <div class="text-sm font-semibold" style="color:var(--ink);">Broken knee</div>
+          <div class="text-xs mt-1" style="color:var(--muted);">Surgery planned next</div>
+        </div>
+        <div class="rounded-xl p-4" style="background:var(--ok-bg); border:1px solid var(--line);">
+          <div class="text-sm font-semibold" style="color:var(--ok);">Internal bleeding, adrenal gland</div>
+          <div class="text-xs mt-1" style="color:var(--ink);">Mostly stabilized</div>
+        </div>
+      </div>
+
+      <p class="mt-5 leading-relaxed" style="color:var(--ink);">
+        Once the doctors are confident the internal bleeding is fully in the clear, the plan is <strong>knee surgery first</strong>,
+        followed later by <strong>shoulder surgery</strong>.
+      </p>
+    </section>
+
+    <!-- Timeline -->
+    <section id="timeline" class="py-10" style="border-top:1px solid var(--line);">
+      <h2 class="font-display text-2xl sm:text-3xl font-semibold" style="color:var(--ink);">History &amp; updates</h2>
+      <p class="mt-2 text-sm" style="color:var(--muted);">A running log &mdash; newest at the bottom stays newest as we add to it.</p>
+
+      <div class="mt-7 space-y-7">
+        <div class="timeline-item">
+          <div class="text-xs font-mono uppercase tracking-wide" style="color:var(--muted);">Sep 20, 2026 &middot; 9:24 AM</div>
+          <div class="mt-1 text-sm sm:text-base" style="color:var(--ink);">Accident occurs while Travis is walking to church; suspected drunk driver. Neighbors find him and call paramedics.</div>
+        </div>
+        <div class="timeline-item">
+          <div class="text-xs font-mono uppercase tracking-wide" style="color:var(--muted);">Sep 20, 2026</div>
+          <div class="mt-1 text-sm sm:text-base" style="color:var(--ink);">Admitted to the ICU at Utah Valley Hospital, Pedersen Tower.</div>
+        </div>
+        <div class="timeline-item">
+          <div class="text-xs font-mono uppercase tracking-wide" style="color:var(--muted);">Sep 21, 2026</div>
+          <div class="mt-1 text-sm sm:text-base" style="color:var(--ink);">Still in the ICU. Internal bleeding near the adrenal gland has mostly stabilized. Doctors are planning knee surgery next, then shoulder surgery later.</div>
+        </div>
+      </div>
+    </section>
+
+    <!-- For family & friends -->
+    <section class="py-10" style="border-top:1px solid var(--line);">
+      <div class="rounded-2xl p-6 sm:p-8" style="background:var(--surface-2);">
+        <h2 class="font-display text-2xl font-semibold" style="color:var(--ink);">For family &amp; friends</h2>
+        <p class="mt-3 leading-relaxed" style="color:var(--ink);">
+          This is going to be a long recovery, and Travis is going to be very bored for a lot of it. Please keep him in your thoughts
+          over the coming weeks. We'll keep this page current as things progress, so this is the best place to check before reaching
+          out to the family for the latest.
+        </p>
+      </div>
+    </section>
+
+    <div class="pb-10"></div>
+
+  </main>
+</div>
+
+</body>
+</html>
