@@ -47,7 +47,7 @@
   <header class="sticky z-10 border-b" style="top:env(safe-area-inset-top,0px); background:color-mix(in srgb, var(--bg) 88%, transparent); border-color:var(--line); backdrop-filter:blur(8px);">
     <div class="max-w-3xl mx-auto px-4 sm:px-6 py-3 flex items-center justify-between gap-3">
       <span class="font-display text-[15px] sm:text-base font-medium tracking-tight" style="color:var(--ink);">Travis's Recovery</span>
-      <span class="text-xs sm:text-sm font-mono" style="color:var(--muted);">Updated Sep 21, 2026</span>
+      <span class="text-xs sm:text-sm font-mono" style="color:var(--muted);">Updated Sep 22, 2026</span>
     </div>
   </header>
 
@@ -55,9 +55,9 @@
 
     <!-- Hero -->
     <section class="pt-10 sm:pt-14 pb-8">
-      <div class="inline-flex items-center gap-2 rounded-full px-3 py-1 text-xs font-semibold tracking-wide uppercase" style="background:var(--warn-bg); color:var(--warn);">
-        <span class="w-1.5 h-1.5 rounded-full" style="background:var(--warn);"></span>
-        In the ICU &mdash; condition stabilizing
+      <div class="inline-flex items-center gap-2 rounded-full px-3 py-1 text-xs font-semibold tracking-wide uppercase" style="background:var(--ok-bg); color:var(--ok);">
+        <span class="w-1.5 h-1.5 rounded-full" style="background:var(--ok);"></span>
+        Out of the ICU &mdash; recovering
       </div>
       <h1 class="font-display mt-4 text-4xl sm:text-5xl font-semibold leading-[1.05]" style="color:var(--ink);">
         Travis was hit by a truck while walking to church.<br class="hidden sm:block"> Here's where things stand.
@@ -81,16 +81,16 @@
             <div>
               <div class="text-xs font-semibold uppercase tracking-wide" style="color:var(--muted);">Hospital &amp; room</div>
               <div class="mt-1 font-medium" style="color:var(--ink);">Utah Valley Hospital &mdash; Provo</div>
-              <div class="font-mono text-sm mt-0.5" style="color:var(--ink);">Pedersen Tower, Room 424</div>
+              <div class="font-mono text-sm mt-0.5" style="color:var(--ink);">Pedersen Tower, Room 929</div>
             </div>
           </div>
 
           <div class="flex items-start gap-3">
-            <svg class="icon mt-0.5" style="color:var(--muted);" viewBox="0 0 24 24"><rect x="4" y="10" width="16" height="11" rx="2"/><path d="M8 10V7a4 4 0 0 1 8 0v3"/></svg>
+            <svg class="icon mt-0.5" style="color:var(--ok);" viewBox="0 0 24 24"><path d="M20 6 9 17l-5-5"/></svg>
             <div>
-              <div class="text-xs font-semibold uppercase tracking-wide" style="color:var(--muted);">Door code</div>
-              <div class="mt-1 font-mono text-lg font-semibold tracking-wider" style="color:var(--ink);">12789 #</div>
-              <div class="text-sm mt-0.5" style="color:var(--muted);">Needed to get onto the ICU floor</div>
+              <div class="text-xs font-semibold uppercase tracking-wide" style="color:var(--muted);">Status</div>
+              <div class="mt-1 font-medium" style="color:var(--ink);">Out of the ICU</div>
+              <div class="text-sm mt-0.5" style="color:var(--muted);">No door code needed &mdash; just come up to the room</div>
             </div>
           </div>
         </div>
@@ -101,14 +101,12 @@
             <div>
               <div class="text-xs font-semibold uppercase tracking-wide" style="color:var(--muted);">Visiting</div>
               <p class="mt-1 text-sm sm:text-base" style="color:var(--ink);">
-                Please keep it to <strong>2&ndash;3 visitors at a time</strong> in the room. If more people show up, we just ask that
-                everyone be respectful of the nurses and cycle in and out rather than crowding the hallway.
-              </p>
-              <p class="mt-2 text-sm sm:text-base" style="color:var(--ink);">
-                Per ICU policy, <strong>children under 12 are not allowed</strong> on the floor while Travis is in the ICU.
+                Now that Travis is out of the ICU, the <strong>visitor limit and the under-12 restriction are lifted</strong> &mdash;
+                kids are welcome and you don't need to keep the group small.
               </p>
               <p class="mt-2 text-sm" style="color:var(--muted);">
-                This will probably ease up once Travis is moved out of the ICU &mdash; we just don't know yet when that will be.
+                We still ask that everyone be respectful of the nurses and of Travis's rest &mdash; cycle in and out rather than
+                crowding the room or the hallway.
               </p>
               <p class="mt-3 text-lg">
                 <a href="https://docs.google.com/spreadsheets/d/1UjQWNIcItN5cS5NsMN_Ek8chb70qzbu7s5NcqC_RCRg/edit?gid=0#gid=0" target="_blank" rel="noopener" class="font-semibold underline underline-offset-2">Sign up to visit &rarr;</a>
@@ -141,22 +139,34 @@
           <div class="text-sm font-semibold" style="color:var(--ink);">6 broken ribs</div>
         </div>
         <div class="rounded-xl p-4" style="background:var(--surface); border:1px solid var(--line);">
-          <div class="text-sm font-semibold" style="color:var(--ink);">Dislocated shoulder</div>
-          <div class="text-xs mt-1" style="color:var(--muted);">Surgery planned, after the knee</div>
+          <div class="text-sm font-semibold" style="color:var(--ink);">Dislocated / torn shoulder</div>
+          <div class="text-xs mt-1" style="color:var(--muted);">One side &mdash; surgery planned, after the knee</div>
+        </div>
+        <div class="rounded-xl p-4" style="background:var(--surface); border:1px solid var(--line);">
+          <div class="text-sm font-semibold" style="color:var(--ink);">Damaged clavicle, other side</div>
+          <div class="text-xs mt-1" style="color:var(--muted);">Shoulder itself is fine, but that arm is out of use for now</div>
         </div>
         <div class="rounded-xl p-4" style="background:var(--surface); border:1px solid var(--line);">
           <div class="text-sm font-semibold" style="color:var(--ink);">Broken knee</div>
           <div class="text-xs mt-1" style="color:var(--muted);">Surgery planned next</div>
         </div>
+        <div class="rounded-xl p-4" style="background:var(--surface); border:1px solid var(--line);">
+          <div class="text-sm font-semibold" style="color:var(--ink);">Abdomen separated from hip/thigh</div>
+          <div class="text-xs mt-1" style="color:var(--muted);">Surgery needed, timing not set</div>
+        </div>
         <div class="rounded-xl p-4" style="background:var(--ok-bg); border:1px solid var(--line);">
           <div class="text-sm font-semibold" style="color:var(--ok);">Internal bleeding, adrenal gland</div>
-          <div class="text-xs mt-1" style="color:var(--ink);">Mostly stabilized</div>
+          <div class="text-xs mt-1" style="color:var(--ink);">Looking good &mdash; not a concern right now</div>
         </div>
       </div>
 
       <p class="mt-5 leading-relaxed" style="color:var(--ink);">
-        Once the doctors are confident the internal bleeding is fully in the clear, the plan is <strong>knee surgery first</strong>,
-        followed later by <strong>shoulder surgery</strong>.
+        With the internal bleeding no longer a concern, the plan is <strong>knee surgery first</strong>, followed later by
+        <strong>shoulder surgery</strong> and a repair of the <strong>abdominal separation</strong>.
+      </p>
+      <p class="mt-3 leading-relaxed" style="color:var(--ink);">
+        He is <strong>eating</strong> again and has some use of both arms, but <strong>neither arm is really usable right now</strong>
+        &mdash; one shoulder is dislocated and torn, and the other side's clavicle is damaged, so he can't engage either shoulder yet.
       </p>
     </section>
 
@@ -177,6 +187,22 @@
         <div class="timeline-item">
           <div class="text-xs font-mono uppercase tracking-wide" style="color:var(--muted);">Sep 21, 2026</div>
           <div class="mt-1 text-sm sm:text-base" style="color:var(--ink);">Still in the ICU. Internal bleeding near the adrenal gland has mostly stabilized. Doctors are planning knee surgery next, then shoulder surgery later.</div>
+        </div>
+        <div class="timeline-item">
+          <div class="text-xs font-mono uppercase tracking-wide" style="color:var(--muted);">Sep 21, 2026</div>
+          <div class="mt-1 text-sm sm:text-base" style="color:var(--ink);">Doctors determined the internal bleeding is looking good and is not a concern right now. They also identified that his abdomen has separated from his hip/thigh, which will need surgery later on.</div>
+        </div>
+        <div class="timeline-item">
+          <div class="text-xs font-mono uppercase tracking-wide" style="color:var(--muted);">Sep 22, 2026</div>
+          <div class="mt-1 text-sm sm:text-base" style="color:var(--ink);">Moved to <strong>Room 929</strong>. He's eating today and can use both arms, though he still can't engage either shoulder.</div>
+        </div>
+        <div class="timeline-item">
+          <div class="text-xs font-mono uppercase tracking-wide" style="color:var(--muted);">Sep 22, 2026</div>
+          <div class="mt-1 text-sm sm:text-base" style="color:var(--ink);"><strong>Out of the ICU</strong> after only 3 days. Room 929 is a regular floor, so the visitor limit and the under-12 restriction are lifted.</div>
+        </div>
+        <div class="timeline-item">
+          <div class="text-xs font-mono uppercase tracking-wide" style="color:var(--muted);">Sep 22, 2026</div>
+          <div class="mt-1 text-sm sm:text-base" style="color:var(--ink);">Damage found to the clavicle on his other side. That shoulder itself is fine, but he can't use that arm for the time being either.</div>
         </div>
       </div>
     </section>
