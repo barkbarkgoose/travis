@@ -1,0 +1,29 @@
+# Django
+Django>=5.2
+djangorestframework>=3.15
+djangorestframework-simplejwt>=5.4
+
+# CORS & Environment
+django-cors-headers>=4.4
+django-environ>=0.11
+cryptography>=42
+
+# Database & Filters
+django-filter>=25.0
+
+# Same-origin static/frontend serving in production (config.settings.production).
+# No separate nginx/Caddy layer required — see docs/HOSTING.md.
+whitenoise>=6.7
+
+# Photo uploads: original-format validation/decoding and derivative generation.
+# pillow-heif adds iPhone HEIC/HEIF support to Pillow's Image.open.
+Pillow>=11.0
+pillow-heif>=0.18
+
+# Background Tasks (optional, enable if needed)
+# celery>=5.4
+# redis>=5.0
+
+# Testing
+pytest>=8.0
+pytest-django>=4.9
