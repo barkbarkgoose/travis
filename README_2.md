@@ -1,3 +1,4 @@
+<<<<<<< HEAD
 <!-- markdownlint-disable MD033 -->
 # Travis's Recovery
 
@@ -404,3 +405,6 @@ them the hard way:
   audited, what a soft-delete looks like): read `docs/SECURITY_AND_LEGAL.md`
   first — most of those decisions were made for a specific reason tied to how
   this record might get used later.
+=======
+https://barkbarkgoose.github.io/travis/
+>>>>>>> 23f150b50216e759a5d9806ca8e7c8fc327ad176
