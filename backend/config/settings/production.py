@@ -1,5 +1,9 @@
 """Production settings for config project."""
 
+import base64
+import binascii
+import json
+
 from django.core.exceptions import ImproperlyConfigured
 
 from .base import *  # noqa: F401,F403
@@ -17,10 +21,8 @@ if not ALLOWED_HOSTS or "*" in ALLOWED_HOSTS:  # noqa: F405
 # CORS_ALLOWED_ORIGINS is resolved in base.py from the keychain/env. Serving the
 # built frontend from the same origin as the API means it can stay empty.
 
-# Use PostgreSQL/MySQL in production (optional; SQLite + backups is fine here).
-# DATABASES = {
-#     'default': env.db('DATABASE_URL')
-# }
+# DATABASE_URL is parsed in base.py. PostgreSQL is enabled by setting it to
+# the PostgreSQL service URL; psycopg is installed from requirements.txt.
 
 # SQLite only: WAL mode lets reads and writes overlap instead of locking the
 # whole database file, which matters once photo uploads (slow, hold a write)
@@ -37,7 +39,7 @@ if DATABASES["default"]["ENGINE"] == "django.db.backends.sqlite3":  # noqa: F405
 # exact paths its index.html already references (e.g. /assets/index-xxxx.js)
 # — no Vite base-path change needed. config.urls' catch-all route then
 # serves that same index.html for every path vue-router handles client-side.
-# See docs/HOSTING.md.
+# See docs/hosting/digitalocean.md.
 # --------------------------------------------------------------------------
 MIDDLEWARE = [MIDDLEWARE[0], "whitenoise.middleware.WhiteNoiseMiddleware", *MIDDLEWARE[1:]]  # noqa: F405
 
@@ -45,6 +47,54 @@ STORAGES = {
     "default": {"BACKEND": "django.core.files.storage.FileSystemStorage"},
     "staticfiles": {"BACKEND": "whitenoise.storage.CompressedManifestStaticFilesStorage"},
 }
+
+# Local private media is the default for the VPS. GCS remains an optional
+# storage backend for deployments that already use a private bucket.
+MEDIA_STORAGE_BACKEND = env("MEDIA_STORAGE_BACKEND", default="filesystem").lower()  # noqa: F405
+if MEDIA_STORAGE_BACKEND not in {"filesystem", "gcs"}:
+    raise ImproperlyConfigured(
+        "MEDIA_STORAGE_BACKEND must be either 'filesystem' or 'gcs'."
+    )
+
+GCS_BUCKET_NAME = env("GCS_BUCKET_NAME", default="")  # noqa: F405
+GCS_PROJECT_ID = env("GCS_PROJECT_ID", default="")  # noqa: F405
+GCS_CREDENTIALS_JSON_B64 = env("GCS_CREDENTIALS_JSON_B64", default="")  # noqa: F405
+
+if MEDIA_STORAGE_BACKEND == "gcs":
+    if not all((GCS_BUCKET_NAME, GCS_PROJECT_ID, GCS_CREDENTIALS_JSON_B64)):
+        raise ImproperlyConfigured(
+            "GCS media storage requires GCS_BUCKET_NAME, GCS_PROJECT_ID, "
+            "and GCS_CREDENTIALS_JSON_B64."
+        )
+
+    try:
+        from google.oauth2 import service_account
+
+        credentials_info = json.loads(
+            base64.b64decode(GCS_CREDENTIALS_JSON_B64, validate=True).decode("utf-8")
+        )
+        gcs_credentials = service_account.Credentials.from_service_account_info(
+            credentials_info
+        )
+    except (binascii.Error, UnicodeDecodeError, ValueError, TypeError, KeyError) as exc:
+        raise ImproperlyConfigured(
+            "GCS_CREDENTIALS_JSON_B64 must be base64-encoded service-account JSON."
+        ) from exc
+
+    STORAGES["default"] = {
+        "BACKEND": "storages.backends.gcloud.GoogleCloudStorage",
+        "OPTIONS": {
+            "bucket_name": GCS_BUCKET_NAME,
+            "project_id": GCS_PROJECT_ID,
+            "credentials": gcs_credentials,
+            # The bucket uses uniform bucket-level access and must stay private.
+            "default_acl": None,
+        },
+    }
+elif any((GCS_BUCKET_NAME, GCS_PROJECT_ID, GCS_CREDENTIALS_JSON_B64)):
+    raise ImproperlyConfigured(
+        "GCS_* variables are set but MEDIA_STORAGE_BACKEND is not 'gcs'."
+    )
 
 # Root-relative files WhiteNoise serves as-is alongside STATIC_ROOT — the
 # frontend's hashed JS/CSS under /assets/, plus whatever else `pnpm build`
@@ -69,7 +119,8 @@ MIDDLEWARE = [*MIDDLEWARE, "config.middleware.NoIndexHeaderMiddleware"]
 # usually terminates TLS itself with nothing in between, and WSGI's own
 # wsgi.url_scheme already reflects that correctly — trusting a header that
 # never arrives makes Django think every request is insecure, which causes an
-# HTTPS redirect loop with SECURE_SSL_REDIRECT below. See docs/HOSTING.md.
+# HTTPS redirect loop with SECURE_SSL_REDIRECT below. See docs/hosting/digitalocean.md
+# and docs/hosting/namecheap.md for host-specific proxy behavior.
 #   python -m keychain set TRUST_PROXY_SSL_HEADER=0
 if env.bool("TRUST_PROXY_SSL_HEADER", default=True):  # noqa: F405
     SECURE_PROXY_SSL_HEADER = ("HTTP_X_FORWARDED_PROTO", "https")
@@ -79,3 +130,10 @@ CSRF_COOKIE_SECURE = True
 # Start short: a wrong HSTS value is sticky in browsers. Raise it (e.g.
 # 31536000) once HTTPS is confirmed working.
 SECURE_HSTS_SECONDS = env.int("SECURE_HSTS_SECONDS", default=86400)  # noqa: F405
+
+# One Caddy proxy sits between clients and Django on the VPS.
+# Override when deliberately deploying behind a different proxy topology.
+REST_FRAMEWORK = {
+    **REST_FRAMEWORK,  # noqa: F405
+    "NUM_PROXIES": env.int("NUM_PROXIES", default=1),  # noqa: F405
+}

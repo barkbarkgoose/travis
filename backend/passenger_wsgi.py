@@ -3,7 +3,7 @@
 Used on shared hosting only — a VPS with its own gunicorn/systemd setup has
 no reason to touch this file. cPanel creates and manages its own virtualenv
 for the app and imports this file looking for a WSGI callable named
-`application`; everything past that is normal Django. See docs/HOSTING.md.
+`application`; everything past that is normal Django. See docs/hosting/namecheap.md.
 """
 
 import os

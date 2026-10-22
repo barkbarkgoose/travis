@@ -3,7 +3,7 @@ set -euo pipefail
 cd "$(dirname "$0")"
 
 # Run this ON THE SERVER, inside the virtualenv cPanel's "Setup Python App"
-# page activates for you (see docs/HOSTING.md) — not on your own machine,
+# page activates for you (see docs/hosting/namecheap.md) — not on your own machine,
 # and not for local development (use ./dev.sh for that).
 #
 # Skips the frontend build by default: shared hosting often has no Node.js,

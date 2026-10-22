@@ -1,7 +1,7 @@
 """Serves the built Vue app's index.html for routes vue-router handles
 client-side, so a direct hit or a page refresh on e.g. /entries/5 doesn't
 404 — the browser gets the same single-page app either way and vue-router
-resolves the URL itself once it loads. See docs/HOSTING.md.
+resolves the URL itself once it loads. See docs/hosting/digitalocean.md.
 
 Real files (the JS/CSS bundle under /assets/, robots.txt, ...) are served by
 WhiteNoise before a request ever reaches this — see WHITENOISE_ROOT in

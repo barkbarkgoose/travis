@@ -123,3 +123,8 @@ telemetry-id
 !/.agent-tasks/tasks/*/
 !/.agent-tasks/tasks/*/research/
 !/.agent-tasks/tasks/*/research/**
+
+# VPS runtime secrets belong outside the checkout.
+deploy/**/app.env
+deploy/**/app.env.*
+!deploy/**/app.env.example

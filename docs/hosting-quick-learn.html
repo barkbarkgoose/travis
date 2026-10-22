@@ -1,0 +1,134 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <meta name="description" content="A visual Quick-Learn guide to deploying Travis Recovery on Namecheap shared hosting." />
+  <title>Quick-Learn: Namecheap Shared Hosting</title>
+  <style>
+    :root { color-scheme: light; --bg:#f8fafc; --panel:#fff; --ink:#172033; --muted:#526077; --line:#dce3ed; --soft:#eef6f6; --brand:#0f766e; --brand2:#ccfbf1; --warn:#92400e; --warn-bg:#fffbeb; --code:#101827; --code-ink:#e5eefb; --red:#9f1239; --red-bg:#fff1f2; }
+    :root.dark { color-scheme: dark; --bg:#020617; --panel:#0f172a; --ink:#e5edf8; --muted:#9cacbf; --line:#25334a; --soft:#0b2630; --brand:#5eead4; --brand2:#123e43; --warn:#fcd34d; --warn-bg:#3a2b0c; --code:#020617; --code-ink:#d9e5f6; --red:#fda4af; --red-bg:#40131e; }
+    * { box-sizing:border-box; } html { scroll-behavior:smooth; }
+    body { margin:0; background:var(--bg); color:var(--ink); font:16px/1.55 ui-sans-serif,system-ui,-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif; transition:.2s background,.2s color; }
+    main { max-width:1060px; padding:46px 24px 72px; margin:auto; }
+    header { display:flex; justify-content:space-between; align-items:flex-start; gap:24px; border-bottom:1px solid var(--line); padding-bottom:28px; margin-bottom:34px; }
+    .eyebrow { display:inline-block; color:var(--brand); background:var(--brand2); border-radius:999px; padding:4px 10px; font-size:.73rem; font-weight:800; letter-spacing:.08em; text-transform:uppercase; }
+    h1 { font-size:clamp(2rem,5vw,3.4rem); letter-spacing:-.045em; line-height:1.04; margin:14px 0 12px; } h2 { margin:0 0 16px; font-size:1.3rem; letter-spacing:-.02em; } h3 { margin:0 0 8px; font-size:1rem; }
+    p { margin:0 0 12px; } .lede { max-width:760px; color:var(--muted); font-size:1.12rem; } .section-label { color:var(--brand); font-weight:800; letter-spacing:.1em; font-size:.73rem; text-transform:uppercase; margin-bottom:8px; }
+    section { margin:30px 0; } .card { background:var(--panel); border:1px solid var(--line); border-radius:15px; padding:25px; box-shadow:0 2px 5px #0f172a0a; }
+    .grid { display:grid; grid-template-columns:repeat(2,minmax(0,1fr)); gap:15px; } .grid.three { grid-template-columns:repeat(3,minmax(0,1fr)); }
+    .step { display:flex; gap:13px; } .num { flex:0 0 28px; height:28px; display:grid; place-items:center; border:1px solid var(--line); border-radius:50%; background:var(--soft); color:var(--brand); font-size:.78rem; font-weight:800; }
+    .step p { color:var(--muted); font-size:.92rem; margin:2px 0 0; }
+    .diagram { overflow:auto; background:var(--soft); border:1px solid var(--line); border-radius:11px; padding:20px; margin:18px 0; } .flow { min-width:730px; display:flex; align-items:stretch; gap:11px; } .node { border:1px solid var(--line); border-radius:9px; background:var(--panel); padding:13px; min-width:130px; flex:1; text-align:center; font-size:.84rem; } .node b { display:block; color:var(--brand); margin-bottom:3px; } .arrow { align-self:center; color:var(--brand); font-weight:800; font-size:1.35rem; } .subnode { font-size:.72rem; color:var(--muted); }
+    table { width:100%; border-collapse:collapse; font-size:.86rem; } th,td { padding:11px 10px; border-bottom:1px solid var(--line); vertical-align:top; text-align:left; } th { color:var(--ink); background:var(--soft); } td { color:var(--muted); } td:first-child { color:var(--ink); font-weight:700; }
+    .cast { padding:17px; background:var(--soft); border:1px solid var(--line); border-radius:11px; } .cast p,.cast li { color:var(--muted); font-size:.85rem; } ul { margin:6px 0; padding-left:19px; } code { font: .84em ui-monospace,SFMono-Regular,Menlo,monospace; background:var(--soft); color:var(--brand); padding:1px 4px; border-radius:4px; } pre { margin:14px 0; padding:17px; overflow:auto; border-radius:10px; background:var(--code); color:var(--code-ink); font:.8rem/1.55 ui-monospace,SFMono-Regular,Menlo,monospace; } pre code { padding:0; color:inherit; background:transparent; }
+    .callout { border-left:4px solid var(--brand); background:var(--soft); border-radius:0 9px 9px 0; padding:14px 16px; margin:14px 0; font-size:.9rem; } .callout.warn { border-color:#f59e0b; background:var(--warn-bg); color:var(--warn); } .callout.danger { border-color:#e11d48; background:var(--red-bg); color:var(--red); }
+    .sequence { counter-reset:sequence; list-style:none; padding:0; margin:18px 0 0; } .sequence li { counter-increment:sequence; position:relative; padding:0 0 16px 42px; color:var(--muted); } .sequence li::before { content:counter(sequence); position:absolute; left:0; width:26px; height:26px; border-radius:50%; display:grid; place-items:center; background:var(--brand); color:white; font-size:.75rem; font-weight:800; } .sequence li:not(:last-child)::after { content:""; position:absolute; left:12px; top:28px; height:calc(100% - 22px); border-left:2px solid var(--line); }
+    .checklist { columns:2; padding-left:20px; } .checklist li { break-inside:avoid; margin:7px 0; color:var(--muted); } .checklist li::marker { content:"☐  "; color:var(--brand); } .coordinates { font: .82rem/1.7 ui-monospace,SFMono-Regular,Menlo,monospace; color:var(--muted); }
+    button { cursor:pointer; border:1px solid var(--line); background:var(--panel); border-radius:8px; padding:8px 11px; color:var(--ink); font-weight:700; } button:hover { background:var(--soft); } footer { border-top:1px solid var(--line); color:var(--muted); font-size:.8rem; padding-top:22px; text-align:center; } a { color:var(--brand); } @media(max-width:700px) { main{padding:28px 16px 48px} header{display:block}.grid,.grid.three{grid-template-columns:1fr}.checklist{columns:1}.card{padding:19px} }
+  </style>
+  <script>
+    (() => { if (localStorage.theme === 'dark' || (!localStorage.theme && matchMedia('(prefers-color-scheme: dark)').matches)) document.documentElement.classList.add('dark'); })();
+    function toggleTheme() { const dark = document.documentElement.classList.toggle('dark'); localStorage.theme = dark ? 'dark' : 'light'; }
+  </script>
+</head>
+<body>
+  <main>
+    <header>
+      <div><span class="eyebrow">Quick-Learn Architecture Guide</span><h1>Namecheap shared hosting</h1><p class="lede">How this Django + Vue application fits into cPanel's constrained hosting model—and how to deploy, restart, protect, and back it up without pretending it is a VPS.</p></div>
+      <button type="button" onclick="toggleTheme()" aria-label="Toggle light and dark theme">◐ Theme</button>
+    </header>
+
+    <section class="card">
+      <div class="section-label">1. The 10-Second Anchor</div>
+      <h2>One managed Python process serves the entire app.</h2>
+      <p>On Namecheap shared hosting, Apache and Phusion Passenger start Django for you. Django then serves the API, admin, and already-built Vue site from the same domain.</p>
+      <p><strong>Category &amp; core job:</strong> a <strong>shared-hosting deployment</strong> that adapts a full-stack app to cPanel's Python App environment without requiring nginx, gunicorn, root access, or a separate frontend host.</p>
+    </section>
+
+    <section class="card">
+      <div class="section-label">2. The Conceptual Ladder</div><h2>Build the right mental model first</h2>
+      <div class="grid">
+        <div class="step"><span class="num">1</span><div><strong>Baseline: a web app needs an HTTP entry point.</strong><p>On a VPS, you commonly arrange nginx/Caddy → gunicorn → Django, then add a frontend server.</p></div></div>
+        <div class="step"><span class="num">2</span><div><strong>Friction: cPanel does not give you those controls.</strong><p>No root, no systemd, and no custom reverse proxy. Passenger owns the Python process lifecycle.</p></div></div>
+        <div class="step"><span class="num">3</span><div><strong>Shift: package the frontend with the backend.</strong><p>Build Vue into <code>frontend/dist</code>; Django/WhiteNoise serves its files while the SPA helper returns its <code>index.html</code> for browser routes.</p></div></div>
+        <div class="step"><span class="num">4</span><div><strong>Configure the app cPanel will actually run.</strong><p>Use cPanel's virtualenv and keychain values—not the local <code>uv</code> environment—because Passenger can only import packages installed there.</p></div></div>
+        <div class="step"><span class="num">5</span><div><strong>Mental takeaway: one origin, one lifecycle owner.</strong><p>Passenger runs Django; Django owns API/admin/SPA; cPanel owns the outer server and many security controls.</p></div></div>
+      </div>
+    </section>
+
+    <section class="card">
+      <div class="section-label">3. Visual Architecture &amp; Boundary Map</div><h2>Who serves what?</h2>
+      <p><em>Anchor analogy:</em> Treat cPanel as the building manager: it opens the front door and powers the elevator; your Django app occupies the unit and serves everything inside.</p>
+      <div class="diagram" aria-label="Request flow"><div class="flow"><div class="node"><b>Browser</b><span class="subnode">https://yourdomain.com</span></div><span class="arrow">→</span><div class="node"><b>Apache + AutoSSL</b><span class="subnode">Namecheap-managed HTTPS</span></div><span class="arrow">→</span><div class="node"><b>Passenger</b><span class="subnode">starts/restarts Python</span></div><span class="arrow">→</span><div class="node"><b>Django</b><span class="subnode">API · admin · SPA routing</span></div><span class="arrow">→</span><div class="node"><b>Files &amp; SQLite</b><span class="subnode">dist · static · media · db</span></div></div></div>
+      <div class="callout"><strong>💡 One-origin payoff:</strong> The Vue app calls its API at the same domain. You do not need a separate frontend URL or <code>CORS_ALLOWED_ORIGINS</code> configuration.</div>
+      <div style="overflow:auto"><table><thead><tr><th>Layer</th><th>Owns</th><th>Does not own</th></tr></thead><tbody>
+        <tr><td>cPanel / Namecheap</td><td>Virtualenv creation, Apache, Passenger, certificate tooling, plan quota</td><td>Custom nginx config, firewall rules, system process manager</td></tr>
+        <tr><td>Passenger</td><td>Importing <code>passenger_wsgi.py</code>; Python process restart after <code>tmp/restart.txt</code> changes</td><td>Dependency installation or database migrations</td></tr>
+        <tr><td>Django + WhiteNoise</td><td>API, admin, Django static assets, built Vue files, SPA fallback</td><td>Building the Vue source code</td></tr>
+        <tr><td>Local build machine</td><td><code>pnpm build</code> and production <code>VITE_API_URL</code> compilation</td><td>Serving the deployed site</td></tr>
+      </tbody></table></div>
+    </section>
+
+    <section class="card">
+      <div class="section-label">4. The Cast of Characters</div><h2>The small set of moving parts worth remembering</h2>
+      <div class="grid three">
+        <article class="cast"><h3>cPanel Python App</h3><p>Creates the environment Passenger uses and maps the domain to the application root.</p><ul><li><strong>Owns:</strong> venv, app settings, persistent environment variables.</li><li><strong>Interface:</strong> Setup Python App UI.</li><li><strong>Doesn't touch:</strong> source build or app data setup.</li></ul></article>
+        <article class="cast"><h3><code>passenger_wsgi.py</code></h3><p>The entry file Passenger imports to reach Django.</p><ul><li><strong>Owns:</strong> WSGI entry and production default.</li><li><strong>Interface:</strong> <code>application</code>.</li><li><strong>Doesn't touch:</strong> frontend compilation.</li></ul></article>
+        <article class="cast"><h3>Keychain</h3><p>Stores encrypted production configuration outside source control.</p><ul><li><strong>Owns:</strong> <code>SECRET_KEY</code>, hosts, proxy setting.</li><li><strong>Interface:</strong> <code>python -m keychain set</code>.</li><li><strong>Doesn't touch:</strong> Passenger's virtualenv.</li></ul></article>
+        <article class="cast"><h3>WhiteNoise + SPA helper</h3><p>Serves frontend assets and allows Vue Router URLs to load.</p><ul><li><strong>Owns:</strong> <code>frontend/dist</code>, SPA fallback.</li><li><strong>Interface:</strong> Django settings/middleware.</li><li><strong>Doesn't touch:</strong> Django admin's collected static input.</li></ul></article>
+        <article class="cast"><h3><code>deploy.sh</code></h3><p>Repeats the backend deployment sequence after a pull.</p><ul><li><strong>Owns:</strong> install, migrate, collectstatic, restart.</li><li><strong>Interface:</strong> <code>./deploy.sh [--build-frontend]</code>.</li><li><strong>Doesn't touch:</strong> local builds unless asked.</li></ul></article>
+        <article class="cast"><h3>Backups</h3><p>Independent, encrypted, off-account copies of the evidence and configuration.</p><ul><li><strong>Owns:</strong> recovery from account or disk loss.</li><li><strong>Interface:</strong> cPanel backups / cron / remote storage.</li><li><strong>Doesn't touch:</strong> retention decisions—keep records until resolved.</li></ul></article>
+      </div>
+    </section>
+
+    <section class="card">
+      <div class="section-label">5. Lifecycle Walkthrough</div><h2>Follow one visitor request after a successful deploy</h2>
+      <div class="diagram"><div class="flow"><div class="node"><b>Visitor</b><span class="subnode">opens a Vue route</span></div><span class="arrow">→</span><div class="node"><b>Apache</b><span class="subnode">terminates HTTPS</span></div><span class="arrow">→</span><div class="node"><b>Passenger</b><span class="subnode">hands request to Django</span></div><span class="arrow">→</span><div class="node"><b>SPA fallback</b><span class="subnode">returns dist/index.html</span></div><span class="arrow">→</span><div class="node"><b>Vue</b><span class="subnode">calls same-origin API</span></div></div></div>
+      <ol class="sequence">
+        <li><strong>Trigger:</strong> a relative opens <code>https://yourdomain.com/visit</code>. Apache has a valid AutoSSL certificate and accepts HTTPS.</li>
+        <li><strong>Handoff:</strong> Apache passes the request to the Passenger-managed WSGI application in <code>backend/passenger_wsgi.py</code>.</li>
+        <li><strong>Route decision:</strong> Django sees that <code>/visit</code> is a client-side route and the SPA code returns <code>frontend/dist/index.html</code>.</li>
+        <li><strong>Asset delivery:</strong> WhiteNoise/Django delivers the built JavaScript and CSS from <code>frontend/dist</code>. This is separate from <code>collectstatic</code>, which covers Django's own admin/DRF assets.</li>
+        <li><strong>API call:</strong> Vue's compiled <code>VITE_API_URL</code> points to the real HTTPS domain, so its API request returns to the same Django app without CORS.</li>
+        <li><strong>Persistent state:</strong> Django reads/writes SQLite and media on the hosting account. Passenger stays available until cPanel restarts it or a deploy touches <code>tmp/restart.txt</code>.</li>
+      </ol>
+    </section>
+
+    <section class="card">
+      <div class="section-label">6. The 60-Second Hands-On Spark</div><h2>Verify the three conditions that make production work</h2>
+      <p>After activating the exact virtualenv command cPanel displayed, run this in <code>~/travis-recovery/backend</code>. Replace the placeholder host before setting it.</p>
+      <pre><code># Confirm Passenger's environment can import the app dependencies
+python -c "import django; print(django.get_version())"
+
+# Confirm the two production values that prevent startup and HTTPS problems
+python -m keychain set "ALLOWED_HOSTS=yourdomain.com,www.yourdomain.com"
+python -m keychain set "TRUST_PROXY_SSL_HEADER=0"
+
+# Ask Passenger to reload, then open https://yourdomain.com
+mkdir -p tmp && touch tmp/restart.txt</code></pre>
+      <div class="callout warn"><strong>⚠️ This is not a local command sequence.</strong> Run it only in the cPanel-created virtualenv. Using local <code>uv</code> or another Python environment installs packages Passenger cannot see.</div>
+    </section>
+
+    <section class="card">
+      <div class="section-label">7. Field Guide &amp; Sharp Edges</div><h2>The failures to recognize quickly</h2>
+      <div class="callout danger"><strong>⚠️ Redirect loop:</strong> On this cPanel setup, set <code>TRUST_PROXY_SSL_HEADER=0</code>. Django must not trust a proxy HTTPS header that Apache generally does not supply here. Set it, then touch <code>tmp/restart.txt</code>.</div>
+      <div class="callout warn"><strong>⚠️ Frontend environment values are compiled, not live:</strong> set <code>VITE_API_URL=https://yourdomain.com</code> in <code>frontend/.env.production</code> <em>before</em> <code>pnpm build</code>. An unset build defaults to localhost, sending visitors' browsers to the wrong place.</div>
+      <div class="callout warn"><strong>⚠️ The master key is irreplaceable:</strong> <code>keychain.key</code> decrypts <code>keychain.json</code>. Back it up separately, off the server. Losing the account and this key means losing readable secrets.</div>
+      <div class="callout"><strong>💡 Deployment blueprint:</strong> build Vue locally → upload <code>dist/</code> with <code>rsync --delete</code> → SSH in and <code>git pull</code> → run <code>./deploy.sh</code>. Use <code>--build-frontend</code> only when Node/pnpm is available and adequately resourced on the server.</div>
+      <h3 style="margin-top:25px">First-deploy checklist</h3>
+      <ul class="checklist"><li>DNS points at the Namecheap hosting account; SSH works.</li><li>Python App uses Python 3.10+ and root <code>travis-recovery/backend</code>.</li><li>cPanel environment contains <code>DJANGO_ENV=production</code>.</li><li>Dependencies are installed using cPanel's activated <code>pip</code>.</li><li>Keychain has <code>SECRET_KEY</code>, real <code>ALLOWED_HOSTS</code>, and <code>TRUST_PROXY_SSL_HEADER=0</code>.</li><li><code>keychain.key</code> is backed up away from the server.</li><li>Built <code>frontend/dist/index.html</code> is on the server with the real API URL embedded.</li><li><code>migrate</code>, <code>collectstatic</code>, and <code>bootstrap_family</code> ran.</li><li>Passenger restarted; HTTPS and AutoSSL are confirmed.</li><li>At least one real iPhone photo passes the full cutover test.</li></ul>
+      <h3 style="margin-top:25px">When shared hosting fits—and when it does not</h3>
+      <div class="grid"><div><strong>Good fit</strong><ul><li>One modest app and one origin.</li><li>You can accept cPanel's server/security boundaries.</li><li>SQLite and plan-level storage quota are sufficient.</li><li>You build the frontend locally.</li></ul></div><div><strong>Move toward a VPS when</strong><ul><li>You need firewall, fail2ban, root, or custom reverse proxy behavior.</li><li>You need an independent process manager or more predictable resources.</li><li>Storage/upload volume approaches your shared quota.</li><li>You need database or infrastructure choices unavailable in cPanel.</li></ul></div></div>
+      <h3 style="margin-top:25px">Backup and storage rules</h3>
+      <p>Keep an encrypted off-server copy, retain it until the case is resolved, and perform a restore drill before relying on it. Photo storage grows quickly: 5 visitors/day × 6 photos × 5 MB is about 4.5 GB/month; originals plus display copy and thumbnail use roughly 1.3× original size.</p>
+      <pre><code>cd ~/travis-recovery/backend && tar czf - db.sqlite3 media/ keychain.json | \
+  gpg --batch --yes --passphrase-file ~/.backup-passphrase -c -o \
+  ~/backups/travis-recovery-$(date +\%Y\%m\%d).tar.gz.gpg</code></pre>
+      <h3 style="margin-top:25px">Deep-dive coordinates</h3>
+      <ul class="coordinates"><li>docs/hosting/namecheap.md — shared-hosting deployment and operations</li><li>docs/hosting/railway.md — Railway deployment, PostgreSQL, and GCS</li><li>backend/passenger_wsgi.py — Passenger's WSGI entry point</li><li>backend/config/settings/production.py — storage, WhiteNoise, SQLite WAL, HTTPS/proxy behavior</li><li>backend/config/settings/base.py — frontend <code>dist</code> location and photo upload cap</li><li>backend/config/spa.py — Vue client-side route fallback</li><li>backend/config/middleware.py — <code>X-Robots-Tag: noindex</code> response header</li><li>deploy.sh — repeated server deployment routine</li><li>docs/SECURITY_AND_LEGAL.md — preservation and operational constraints to read alongside hosting</li></ul>
+    </section>
+    <footer>Generated via Quick-Learn · Single-file guide · No server or build step required to read</footer>
+  </main>
+</body>
+</html>

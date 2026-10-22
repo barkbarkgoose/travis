@@ -88,7 +88,7 @@ flowchart TB
 ```
 
 **Why same-origin matters here, specifically:** in production, Django serves
-the *built* Vue app itself (see `docs/HOSTING.md`) — one process, one domain,
+the *built* Vue app itself (see `docs/hosting/railway.md`) — one process, one domain,
 no CORS to configure and no separate frontend host to secure. In local
 development, Vite's dev server runs separately for hot-reload and proxies
 `/api`, `/admin`, and `/static` back to Django (`frontend/vite.config.ts`), so
@@ -253,7 +253,7 @@ unrecoverable. Rotate it with `python -m keychain rotate-key`.
 | `SECRET_KEY` | — (required) | Django's standard secret |
 | `ALLOWED_HOSTS` | — (required in production) | Comma-separated; `production.py` refuses to start with `*` |
 | `CORS_ALLOWED_ORIGINS` | — | Not needed in production — same-origin serving, see §2 |
-| `TRUST_PROXY_SSL_HEADER` | `1` | Set `0` on shared hosting with no reverse proxy — see `docs/HOSTING.md` |
+| `TRUST_PROXY_SSL_HEADER` | `1` | Set `0` on shared hosting with no reverse proxy — see `docs/hosting/namecheap.md` |
 | `ENTRY_EDIT_WINDOW_HOURS` | `24` | How long an author can still edit a submitted entry |
 | `MAX_CONCURRENT_VISITORS` | `3` | Calendar capacity rule |
 | `JWT_ACCESS_TOKEN_LIFETIME_MINUTES` | `60` | |
@@ -264,7 +264,7 @@ unrecoverable. Rotate it with `python -m keychain rotate-key`.
 ```
 travis-recovery/
 ├── dev.sh, dev.py          # one-command local dev runner
-├── deploy.sh                # deploy helper for shared hosting — see docs/HOSTING.md
+├── deploy.sh                # deploy helper for shared hosting — see docs/hosting/namecheap.md
 ├── docs/
 │   ├── HOSTING.md            # deployment how-to (Namecheap/cPanel shared hosting)
 │   ├── SECURITY_AND_LEGAL.md # the doc that actually shaped the design
@@ -347,7 +347,7 @@ pnpm build            # vue-tsc + vite build — also the type-check
 
 ### Deploying
 
-`docs/HOSTING.md` is the full how-to (currently written for Namecheap's
+`docs/hosting/namecheap.md` is the shared-hosting how-to (currently written for Namecheap's
 shared cPanel hosting — SSH access, cPanel's "Setup Python App"/Passenger,
 Django serving the built frontend itself via WhiteNoise, no separate reverse
 proxy). The short version: `git clone` on the server, `pip install` inside

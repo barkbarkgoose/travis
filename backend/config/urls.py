@@ -3,9 +3,11 @@
 from django.contrib import admin
 from django.urls import include, path, re_path
 
+from config.health import readiness
 from config.spa import serve_frontend
 
 urlpatterns = [
+    path("health/", readiness, name="readiness"),
     path("admin/", admin.site.urls),
     path("api/v1/auth/", include("apps.users.urls")),
     path("api/v1/journal/", include("apps.journal.urls")),
@@ -15,6 +17,6 @@ urlpatterns = [
     # api/ and admin/ so a bad or removed endpoint still 404s normally
     # instead of silently returning the frontend's HTML. Real static assets
     # never reach here in production — WhiteNoise serves those before the
-    # URLconf runs. See config.spa and docs/HOSTING.md.
+    # URLconf runs. See config.spa and docs/hosting/digitalocean.md.
     re_path(r"^(?!api/|admin/).*$", serve_frontend),
 ]

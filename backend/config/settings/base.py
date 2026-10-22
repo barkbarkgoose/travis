@@ -140,7 +140,7 @@ STATIC_URL = "static/"
 STATIC_ROOT = BASE_DIR / "staticfiles"
 
 # The built Vue app (`frontend/dist`, from `pnpm build`) — same-origin
-# serving, see docs/HOSTING.md. In production this is served directly by
+# serving, see docs/hosting/digitalocean.md. In production this is served directly by
 # WhiteNoise (config.settings.production) and as the fallback for any route
 # vue-router handles client-side (config.spa.serve_frontend). Not present in
 # local dev unless you've run a build yourself; ./dev.sh uses Vite's own dev
@@ -150,7 +150,7 @@ FRONTEND_DIST_DIR = BASE_DIR.parent / "frontend" / "dist"
 # Uploaded evidence (photos). There is deliberately no MEDIA_URL and no URL
 # route serving this directory: files are only ever streamed through
 # authenticated views, so a guessed path never returns a photo.
-MEDIA_ROOT = BASE_DIR / "media"
+MEDIA_ROOT = Path(env("MEDIA_ROOT", default=str(BASE_DIR / "media")))
 MAX_PHOTO_UPLOAD_BYTES = 25 * 1024 * 1024
 # Bodies bigger than this spill to a temp file instead of living in memory.
 FILE_UPLOAD_MAX_MEMORY_SIZE = 5 * 1024 * 1024
