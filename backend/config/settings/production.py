@@ -109,12 +109,12 @@ SECURE_REFERRER_POLICY = "same-origin"
 # Adds X-Robots-Tag: noindex to every response. Defense in depth alongside
 # the frontend's own <meta name="robots"> and public/robots.txt (see
 # docs/SECURITY_AND_LEGAL.md) — it matters more here than on a VPS behind
-# nginx/Caddy, because shared hosting gives you no reverse-proxy layer to set
+# nginx, because shared hosting gives you no reverse-proxy layer to set
 # response headers at, so it has to come from Django itself.
 MIDDLEWARE = [*MIDDLEWARE, "config.middleware.NoIndexHeaderMiddleware"]
 
 # HTTPS. Only trust X-Forwarded-Proto when something in front of this process
-# actually sets it — a VPS behind nginx/Caddy, or a host's own load balancer.
+# actually sets it — a VPS behind nginx, or a host's own load balancer.
 # On shared hosting (Namecheap cPanel's "Setup Python App"/Passenger), Apache
 # usually terminates TLS itself with nothing in between, and WSGI's own
 # wsgi.url_scheme already reflects that correctly — trusting a header that
@@ -131,7 +131,7 @@ CSRF_COOKIE_SECURE = True
 # 31536000) once HTTPS is confirmed working.
 SECURE_HSTS_SECONDS = env.int("SECURE_HSTS_SECONDS", default=86400)  # noqa: F405
 
-# One Caddy proxy sits between clients and Django on the VPS.
+# One nginx proxy sits between clients and Django on the VPS.
 # Override when deliberately deploying behind a different proxy topology.
 REST_FRAMEWORK = {
     **REST_FRAMEWORK,  # noqa: F405

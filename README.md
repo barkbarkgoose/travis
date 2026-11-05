@@ -86,8 +86,9 @@ flowchart TB
 ```
 
 **Why same-origin matters here, specifically:** in production, Django serves
-the *built* Vue app itself (see `docs/hosting/railway.md`) — one process, one domain,
-no CORS to configure and no separate frontend host to secure. In local
+the built Vue app and the API from one domain (nginx serves the Vue files and
+passes `/api` and `/admin` to Django) — no CORS to configure and no separate
+frontend host to secure. In local
 development, Vite's dev server runs separately for hot-reload and proxies
 `/api`, `/admin`, and `/static` back to Django (`frontend/vite.config.ts`), so
 the same request paths work identically in both places.
@@ -251,7 +252,7 @@ unrecoverable. Rotate it with `python -m keychain rotate-key`.
 | `SECRET_KEY` | — (required) | Django's standard secret |
 | `ALLOWED_HOSTS` | — (required in production) | Comma-separated; `production.py` refuses to start with `*` |
 | `CORS_ALLOWED_ORIGINS` | — | Not needed in production — same-origin serving, see §2 |
-| `TRUST_PROXY_SSL_HEADER` | `1` | Set `0` on shared hosting with no reverse proxy — see `docs/hosting/namecheap.md` |
+| `TRUST_PROXY_SSL_HEADER` | `1` | Set `0` only if nothing in front of Django sets `X-Forwarded-Proto` (no nginx) |
 | `ENTRY_EDIT_WINDOW_HOURS` | `24` | How long an author can still edit a submitted entry |
 | `MAX_CONCURRENT_VISITORS` | `3` | Calendar capacity rule |
 | `JWT_ACCESS_TOKEN_LIFETIME_MINUTES` | `60` | |
@@ -262,13 +263,12 @@ unrecoverable. Rotate it with `python -m keychain rotate-key`.
 ```
 travis-recovery/
 ├── dev.sh, dev.py          # one-command local dev runner
-├── deploy.sh                # deploy helper for shared hosting — see docs/hosting/namecheap.md
+├── deploy.sh                # build + rsync to the VPS (from vpshome's deploy-django-vue template)
+├── scripts/backup-media.sh  # daily photo snapshots on the VPS (backup-db only covers the database)
 ├── docs/
-│   ├── HOSTING.md            # deployment how-to (Namecheap/cPanel shared hosting)
 │   ├── SECURITY_AND_LEGAL.md # the doc that actually shaped the design
 │   └── USING_BOILERPLATE_AS_UPSTREAM.md
 ├── backend/
-│   ├── passenger_wsgi.py     # shared-hosting entry point (cPanel Passenger)
 │   ├── config/
 │   │   ├── settings/          # base.py, local.py, production.py, test.py
 │   │   ├── urls.py             # API routes + the SPA catch-all, last
@@ -338,20 +338,25 @@ uv run --with-requirements requirements.txt python -m pytest
 
 # Frontend — 42 tests
 cd frontend
-pnpm test          # vitest, watch mode
-pnpm test run       # single run
-pnpm build            # vue-tsc + vite build — also the type-check
-```
+pnpm tes### Deploying
 
-### Deploying
+Hosted on one DigitalOcean VPS, set up with vpshome's `provision/provision-django-vue.sh`
+(nginx → gunicorn → Django, PostgreSQL on the box, no Docker). The guide for that
+script is `provision/django-vue.md` in vpshome. `./deploy.sh` (run on your Mac) tests,
+builds the frontend, rsyncs, backs up the database, migrates and restarts.
 
-`docs/hosting/namecheap.md` is the shared-hosting how-to (currently written for Namecheap's
-shared cPanel hosting — SSH access, cPanel's "Setup Python App"/Passenger,
-Django serving the built frontend itself via WhiteNoise, no separate reverse
-proxy). The short version: `git clone` on the server, `pip install` inside
-the venv cPanel gives you, set a few keychain values, build the frontend
-(locally is recommended — see the guide for why) and `rsync` it up,
-`migrate`, `collectstatic`, `bootstrap_family`, then `touch tmp/restart.txt`.
+Settings the provision script doesn't write, to add by hand to `/srv/NAME/.env`:
+`SECRET_KEY`, `SETTINGS_ENCRYPTION_KEY` (copy the existing ones, don't generate new),
+and either `MEDIA_ROOT=/srv/NAME/data/media` (photos on disk; it has to be under
+`data/`, the only folder the service may write) or `MEDIA_STORAGE_BACKEND=gcs` plus
+the three `GCS_*` values.
+
+Backups: the provision script's `bin/backup-db` covers the database nightly. Photos on
+disk need `scripts/backup-media.sh` too; how to install it is in its header. Both
+only keep copies on the same box, so also copy `/srv/NAME/backups` off it (or turn on
+DigitalOcean's droplet backups).
+
+ily`, then `touch tmp/restart.txt`.
 `deploy.sh` at the repo root re-runs the repeatable parts of that for every
 deploy after the first.
 
@@ -378,7 +383,7 @@ them the hard way:
 > for that reason.
 
 > [!WARNING]
-> **On shared hosting (no reverse proxy), trusting `X-Forwarded-Proto` when
+> **If on shared hosting (no reverse proxy), trusting `X-Forwarded-Proto` when
 > nothing ever sets it causes an HTTPS redirect loop** — Django concludes
 > every request is insecure and keeps redirecting. See
 > `TRUST_PROXY_SSL_HEADER` above and the comment in

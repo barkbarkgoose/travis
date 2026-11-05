@@ -17,7 +17,7 @@ psycopg[binary]>=3.2
 django-storages[google]>=1.14
 
 # Same-origin static/frontend serving in production (config.settings.production).
-# No separate nginx/Caddy layer required — see docs/hosting/digitalocean.md.
+# Also covers hosts with no nginx in front (shared hosting); harmless behind nginx.
 whitenoise>=6.7
 
 # Photo uploads: original-format validation/decoding and derivative generation.

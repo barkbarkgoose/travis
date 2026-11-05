@@ -187,8 +187,8 @@ REST_FRAMEWORK = {
     "PAGE_SIZE": 20,
     "DEFAULT_RENDERER_CLASSES": ("rest_framework.renderers.JSONRenderer",),
     "DEFAULT_THROTTLE_RATES": {"join": "10/min"},
-    # Number of reverse proxies in front of Django (0 in dev, 1 behind nginx or
-    # Caddy). Without it every visitor shares the proxy's IP for throttling.
+    # Number of reverse proxies in front of Django (0 in dev, 1 behind nginx).
+    # Without it every visitor shares the proxy's IP for throttling.
     "NUM_PROXIES": env.int("NUM_PROXIES", default=0),
 }
 

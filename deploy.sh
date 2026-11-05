@@ -1,50 +1,43 @@
 #!/usr/bin/env bash
+# deploy.sh: build locally, rsync to the server, then back up, install, migrate and restart there.
+# Template from vpshome/provision. Copy it to your project root as deploy.sh, edit the settings
+# block (and the test/build commands), chmod 755. Needs the server set up by
+# provision-django-vue.sh first. Guide: provision/django-vue.md in vpshome.
 set -euo pipefail
 cd "$(dirname "$0")"
 
-# Run this ON THE SERVER, inside the virtualenv cPanel's "Setup Python App"
-# page activates for you (see docs/hosting/namecheap.md) — not on your own machine,
-# and not for local development (use ./dev.sh for that).
-#
-# Skips the frontend build by default: shared hosting often has no Node.js,
-# or too little memory for `vite build` + `vue-tsc` to run comfortably.
-# Build it on your own machine instead and upload frontend/dist/ (the guide
-# has the exact rsync command). Pass --build-frontend if Node is available
-# on the server and you'd rather build it there.
+# ---- settings
+HOST=drop2          # ssh alias from ~/.ssh/config (required)
+NAME=travis         # the --name given to provision-django-vue.sh (required)
+BACKEND=backend     # local folder with manage.py; lands at app/<its basename> (= --backend-dir)
+FRONTEND=frontend   # local Vue project; its build output is $FRONTEND/dist
+EXTRA=()            # other local folders the backend imports, copied next to it under app/
+[ -n "$HOST" ] && [ -n "$NAME" ] || { echo "deploy.sh: set HOST and NAME in its settings block first" >&2; exit 1; }
+APP=/srv/$NAME
+SERVER_BACKEND=$APP/app/$(basename "$BACKEND")
 
-BUILD_FRONTEND=0
-for arg in "$@"; do
-  case "$arg" in
-    --build-frontend) BUILD_FRONTEND=1 ;;
-    *)
-      echo "Unknown option: $arg" >&2
-      echo "Usage: ./deploy.sh [--build-frontend]" >&2
-      exit 1
-      ;;
-  esac
-done
+# 1. tests + frontend build (locally)
+(cd "$BACKEND" && .venv/bin/python -m pytest -q)
+(cd "$FRONTEND" && pnpm build)
 
-echo "==> Installing backend dependencies"
-pip install -r backend/requirements.txt
+# 2. copy code. Excludes keep secrets, local databases and server-side state out of the transfer,
+#    and --delete leaves excluded paths on the server alone.
+rsync -az --delete \
+  --exclude='__pycache__/' --exclude='*.pyc' --exclude='.pytest_cache/' \
+  --exclude='.env' --exclude='db.sqlite3*' --exclude='media/' \
+  --exclude='staticfiles/' --exclude='tests/' --exclude='conftest.py' \
+  --exclude='.venv/' --exclude='keychain.key' --exclude='keychain.json' \
+  "$BACKEND" ${EXTRA[@]+"${EXTRA[@]}"} "$HOST:$APP/app/"
+rsync -az --delete "$FRONTEND/dist/" "$HOST:$APP/frontend/"
 
-if [ "$BUILD_FRONTEND" = "1" ]; then
-  echo "==> Building frontend"
-  (cd frontend && pnpm install --frozen-lockfile && pnpm build)
-else
-  echo "==> Skipping frontend build (pass --build-frontend to build it here instead)"
-  if [ ! -f frontend/dist/index.html ]; then
-    echo "    frontend/dist/index.html not found — upload a build before restarting." >&2
-  fi
-fi
-
-echo "==> Applying migrations"
-(cd backend && DJANGO_ENV=production python manage.py migrate --noinput)
-
-echo "==> Collecting Django's own static files (admin, DRF browsable API)"
-(cd backend && DJANGO_ENV=production python manage.py collectstatic --noinput)
-
-echo "==> Restarting the app"
-mkdir -p backend/tmp
-touch backend/tmp/restart.txt
-
-echo "Done."
+# 3. on the server: back up first, install deps, migrate, restart
+ssh -t "$HOST" "
+  set -e
+  umask 022
+  sudo -u $NAME $APP/bin/backup-db
+  $APP/venv/bin/pip install --no-cache-dir -q -r $SERVER_BACKEND/requirements.txt
+  sudo -u $NAME $APP/bin/manage migrate --noinput
+  $APP/bin/manage collectstatic --noinput
+  sudo systemctl restart $NAME
+"
+echo 'Deployed.'
