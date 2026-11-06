@@ -60,6 +60,12 @@ def _entry_has_minimal_content(entry: Entry) -> bool:
     return answers_has_content(entry.answers)
 
 
+def _entry_needs_photo_notes(entry: Entry) -> bool:
+    """A photo without context is hard to read later, so photos need a note."""
+    has_photos = entry.photos.filter(deleted_at__isnull=True).exists()
+    return has_photos and not str((entry.answers or {}).get("photo_notes") or "").strip()
+
+
 class EntryListCreateView(generics.ListCreateAPIView):
     """GET lists the caller's own entries (family can pass `?all=1` for
     everyone in the organization). POST creates a new draft entry."""
@@ -174,6 +180,11 @@ class EntrySubmitView(APIView):
         if not _entry_has_minimal_content(entry):
             return Response(
                 {"detail": "Add a note, a pain level, or a photo before submitting."},
+                status=status.HTTP_400_BAD_REQUEST,
+            )
+        if _entry_needs_photo_notes(entry):
+            return Response(
+                {"detail": "Add a note about what the photos show before submitting."},
                 status=status.HTTP_400_BAD_REQUEST,
             )
 

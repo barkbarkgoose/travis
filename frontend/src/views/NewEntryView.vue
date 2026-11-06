@@ -82,14 +82,17 @@ const writePayload = computed<EntryWritePayload>(() => ({
 
 const saveState = ref<'idle' | 'saving' | 'saved' | 'error'>('idle')
 
-async function saveNow() {
-  if (!entryId.value) return
+/** Returns whether the save worked, so submit can stop on a failed save. */
+async function saveNow(): Promise<boolean> {
+  if (!entryId.value) return false
   saveState.value = 'saving'
   try {
     await journalApi.updateEntry(entryId.value, writePayload.value)
     saveState.value = 'saved'
+    return true
   } catch {
     saveState.value = 'error'
+    return false
   }
 }
 
@@ -155,7 +158,9 @@ async function onFilesChosen(event: Event) {
 const submitting = ref(false)
 const submitError = ref('')
 
-const canSubmit = computed(() => photoNotes.value.trim().length > 0)
+// Photos need a note saying what they show (the server enforces the same rule).
+const photoNotesRequired = computed(() => photos.value.length > 0)
+const canSubmit = computed(() => !photoNotesRequired.value || photoNotes.value.trim().length > 0)
 
 async function handleSubmit() {
   if (!entryId.value || !canSubmit.value) return
@@ -163,7 +168,10 @@ async function handleSubmit() {
   submitError.value = ''
   debouncedSave.cancel()
   try {
-    await saveNow()
+    if (!(await saveNow())) {
+      submitError.value = "Your answers didn't save, so the entry wasn't submitted. Please try again."
+      return
+    }
     await journalApi.submitEntry(entryId.value)
     router.push({ name: 'my-entries', query: { submitted: String(entryId.value) } })
   } catch (err) {
@@ -347,7 +355,7 @@ async function handleSubmit() {
           <div>
             <label for="photo-notes" class="block text-sm font-semibold text-ink">
               {{ PHOTO_NOTES_GUIDANCE }}
-              <span class="font-normal text-muted">(required)</span>
+              <span v-if="photoNotesRequired" class="font-normal text-muted">(required with photos)</span>
             </label>
             <textarea
               id="photo-notes"
@@ -371,7 +379,7 @@ async function handleSubmit() {
             />
           </div>
 
-          <p v-if="!canSubmit" class="text-sm text-warn">Add a note on the photos above before submitting.</p>
+          <p v-if="!canSubmit" class="text-sm text-warn">Add a note about what the photos show before submitting.</p>
           <p v-if="submitError" class="rounded-xl bg-warn-bg p-4 text-sm text-warn">{{ submitError }}</p>
         </template>
       </div>

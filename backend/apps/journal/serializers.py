@@ -12,9 +12,9 @@ from .models import Addendum, AuditEvent, Entry, Photo
 # question is added, renamed, or removed. Unknown keys are silently dropped,
 # same pattern as `UserSettingsSerializer` in apps.users.
 #
-# `photo_notes` is required by the frontend before an entry can be submitted
-# (see the "Photos & notes" step); the server doesn't re-enforce that itself,
-# since a visitor with photos but no notes yet is still a valid draft.
+# `photo_notes` is required to submit an entry that has photos (enforced in
+# EntrySubmitView, mirrored by the frontend); a draft can still have photos
+# without notes.
 # `additional_notes` is the single catch-all that replaced separate
 # surgeries/treatments/difficulties fields — fewer, more natural free-text
 # prompts read as more credible than several short fragments (see

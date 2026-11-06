@@ -83,8 +83,9 @@ function startEditing() {
   editing.value = true
 }
 
-async function saveEdits() {
-  if (!entry.value) return
+/** Returns whether the save worked, so submit can stop on a failed save. */
+async function saveEdits(): Promise<boolean> {
+  if (!entry.value) return false
   saving.value = true
   saveError.value = ''
   const payload: EntryWritePayload = {
@@ -97,10 +98,43 @@ async function saveEdits() {
   try {
     entry.value = await journalApi.updateEntry(entryId, payload)
     editing.value = false
+    return true
   } catch (err) {
     saveError.value = extractErrorMessage(err) || "Couldn't save your changes."
+    return false
   } finally {
     saving.value = false
+  }
+}
+
+// --- Submit draft ----------------------------------------------------------
+// A draft left behind (page closed, came back later) is finished from here:
+// "Log a visit" always starts a new one.
+
+const submitting = ref(false)
+const submitError = ref('')
+
+// Photos need a note saying what they show (the server enforces the same rule).
+const missingPhotoNotes = computed(() => {
+  if (!entry.value?.photos.length) return false
+  const notes = editing.value
+    ? editAnswers.photo_notes
+    : (entry.value.answers as Record<string, unknown>).photo_notes
+  return !String(notes ?? '').trim()
+})
+
+async function handleSubmit() {
+  if (!entry.value || missingPhotoNotes.value) return
+  submitError.value = ''
+  if (editing.value && !(await saveEdits())) return
+  submitting.value = true
+  try {
+    await journalApi.submitEntry(entryId)
+    router.push({ name: 'my-entries', query: { submitted: String(entryId) } })
+  } catch (err) {
+    submitError.value = extractErrorMessage(err) || 'Could not submit. Please try again.'
+  } finally {
+    submitting.value = false
   }
 }
 
@@ -205,6 +239,23 @@ async function onPhotoChosen(event: Event) {
         This entry is locked. Add an addendum below instead of editing it.
       </p>
 
+      <div v-if="entry.status === 'draft' && entry.can_edit && !editing" class="mt-4">
+        <button
+          type="button"
+          :disabled="submitting || missingPhotoNotes"
+          class="rounded-xl bg-primary px-5 py-2.5 text-sm font-semibold text-white hover:bg-primary-dark disabled:cursor-not-allowed disabled:opacity-50"
+          @click="handleSubmit"
+        >
+          {{ submitting ? 'Submitting…' : 'Submit entry' }}
+        </button>
+        <p v-if="missingPhotoNotes" class="mt-1 text-sm text-warn">
+          Add a note about what the photos show before submitting.
+          <button type="button" class="font-semibold underline" @click="startEditing">Edit</button>
+        </p>
+        <p v-else class="mt-1 text-xs text-muted">Submitting shares it with the family.</p>
+        <p v-if="submitError" class="mt-2 rounded-xl bg-warn-bg p-3 text-sm text-warn">{{ submitError }}</p>
+      </div>
+
       <div v-if="entry.status === 'draft' && entry.can_edit" class="mt-2">
         <span v-if="confirmingDelete" class="inline-flex items-center gap-2 text-sm text-warn">
           Delete this draft? It can't be undone.
@@ -278,15 +329,31 @@ async function onPhotoChosen(event: Event) {
         </div>
 
         <p v-if="saveError" class="text-sm text-warn">{{ saveError }}</p>
+        <p v-if="submitError" class="text-sm text-warn">{{ submitError }}</p>
+        <p v-if="entry.status === 'draft' && missingPhotoNotes" class="text-sm text-warn">
+          Add a note about what the photos show before submitting.
+        </p>
 
-        <div class="flex gap-3">
+        <div class="flex flex-wrap items-center gap-3">
+          <button
+            v-if="entry.status === 'draft'"
+            type="button"
+            :disabled="saving || submitting || missingPhotoNotes"
+            class="rounded-xl bg-primary px-4 py-2 text-sm font-semibold text-white hover:bg-primary-dark disabled:opacity-50"
+            @click="handleSubmit"
+          >
+            {{ submitting ? 'Submitting…' : 'Save and submit' }}
+          </button>
           <button
             type="button"
-            :disabled="saving"
-            class="rounded-xl bg-primary px-4 py-2 text-sm font-semibold text-white hover:bg-primary-dark disabled:opacity-50"
+            :disabled="saving || submitting"
+            class="rounded-xl px-4 py-2 text-sm font-semibold disabled:opacity-50"
+            :class="entry.status === 'draft'
+              ? 'border border-line bg-white text-ink hover:bg-paper'
+              : 'bg-primary text-white hover:bg-primary-dark'"
             @click="saveEdits"
           >
-            {{ saving ? 'Saving…' : 'Save changes' }}
+            {{ saving ? 'Saving…' : entry.status === 'draft' ? 'Save as draft' : 'Save changes' }}
           </button>
           <button type="button" class="text-sm text-muted" @click="editing = false">Cancel</button>
         </div>

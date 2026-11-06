@@ -327,6 +327,28 @@ class TestSubmitEntry:
         api_client.force_authenticate(user=visitor)
         assert api_client.post(submit_url(entry.pk)).status_code == 200
 
+    def test_photos_need_photo_notes(self, api_client, visitor):
+        entry = Entry.objects.create(author=visitor, author_name=visitor.name, pain_level=3)
+        api_client.force_authenticate(user=visitor)
+        upload = api_client.post(
+            f"/api/v1/journal/entries/{entry.pk}/photos/",
+            {"file": make_image_file()},
+            format="multipart",
+        )
+        assert upload.status_code == 201
+
+        response = api_client.post(submit_url(entry.pk))
+        assert response.status_code == 400
+        assert "photos" in response.data["detail"]
+
+        entry.answers = {"photo_notes": "   "}
+        entry.save(update_fields=["answers"])
+        assert api_client.post(submit_url(entry.pk)).status_code == 400
+
+        entry.answers = {"photo_notes": "Bruise on left arm, smaller than Monday."}
+        entry.save(update_fields=["answers"])
+        assert api_client.post(submit_url(entry.pk)).status_code == 200
+
     def test_cannot_submit_twice(self, api_client, visitor):
         entry = Entry.objects.create(
             author=visitor,
