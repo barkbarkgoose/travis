@@ -17,9 +17,7 @@ const isMobileMenuOpen = ref(false)
 const mobileNav = ref<HTMLElement | null>(null)
 
 const displayName = computed(() => authStore.user?.name || authStore.user?.email || 'Account')
-const email = computed(() =>
-  authStore.user?.role === 'family' ? authStore.user?.email || '' : 'Visitor'
-)
+const email = computed(() => authStore.user?.email || '')
 const initials = computed(() => {
   const name = authStore.user?.name?.trim()
   if (name) {
@@ -165,10 +163,21 @@ onBeforeUnmount(() => document.removeEventListener('click', handleDocumentClick)
                 <p class="truncate text-sm font-semibold text-gray-900">{{ displayName }}</p>
                 <p class="mt-0.5 truncate text-xs text-gray-500">{{ email }}</p>
               </div>
+              <router-link
+                to="/account"
+                role="menuitem"
+                class="mt-2 flex w-full items-center gap-3 rounded-xl px-3 py-2.5 text-sm font-medium text-gray-600 transition-colors hover:bg-gray-50 hover:text-gray-900"
+                @click="closeMenu"
+              >
+                <svg class="h-5 w-5 text-gray-400" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" aria-hidden="true">
+                  <path stroke-linecap="round" stroke-linejoin="round" d="M15.75 5.25a3 3 0 013 3m3 0a6 6 0 01-7.029 5.912c-.563-.097-1.159.026-1.563.43L10.5 17.25H8.25v2.25H6v2.25H2.25v-2.818c0-.597.237-1.17.659-1.591l6.499-6.499c.404-.404.527-1 .43-1.563A6 6 0 1121.75 8.25z" />
+                </svg>
+                Account &amp; passkeys
+              </router-link>
               <button
                 type="button"
                 role="menuitem"
-                class="mt-2 flex w-full items-center gap-3 rounded-xl px-3 py-2.5 text-sm font-medium text-gray-600 transition-colors hover:bg-red-50 hover:text-red-700"
+                class="flex w-full items-center gap-3 rounded-xl px-3 py-2.5 text-sm font-medium text-gray-600 transition-colors hover:bg-red-50 hover:text-red-700"
                 @click="handleLogout"
               >
                 <svg class="h-5 w-5 text-gray-400" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" aria-hidden="true">

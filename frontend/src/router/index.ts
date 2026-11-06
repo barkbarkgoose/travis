@@ -20,6 +20,18 @@ const routes: RouteRecordRaw[] = [
     component: () => import('@/views/JoinView.vue')
   },
   {
+    path: '/account',
+    name: 'account',
+    component: () => import('@/views/AccountView.vue'),
+    meta: { requiresAuth: true }
+  },
+  {
+    path: '/admin-signin',
+    name: 'admin-signin',
+    component: () => import('@/views/AdminSigninView.vue'),
+    meta: { requiresAuth: true }
+  },
+  {
     path: '/dashboard',
     name: 'dashboard',
     component: () => import('@/views/DashboardView.vue'),
@@ -64,6 +76,14 @@ router.beforeEach(async (to, _from, next) => {
 
   if (to.meta.requiresAuth && !authStore.isAuthenticated) {
     next({ name: 'login', query: { redirect: to.fullPath } })
+  } else if (
+    authStore.isAuthenticated &&
+    authStore.needsAccountSetup &&
+    to.meta.requiresAuth &&
+    to.name !== 'account'
+  ) {
+    // Family without a passkey session, or a visitor with no password yet.
+    next({ name: 'account' })
   } else if (to.meta.requiresGuest && authStore.isAuthenticated) {
     next({ name: 'dashboard' })
   } else {

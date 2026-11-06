@@ -8,6 +8,8 @@ export type Role = 'visitor' | 'family'
 export interface JoinRequest {
   token: string
   full_name: string
+  email: string
+  password: string
 }
 
 export interface LoginResponse {
@@ -47,6 +49,18 @@ export interface User {
     name: string
   }
   settings?: UserSettings
+  /** False for visitors who joined before accounts had passwords. */
+  has_password?: boolean
+  passkey_count?: number
+  /** Family account whose session wasn't opened with a passkey: family powers are off. */
+  needs_passkey?: boolean
+}
+
+export interface Passkey {
+  id: number
+  name: string
+  created_at: string
+  last_used_at: string | null
 }
 
 export interface AuthState {

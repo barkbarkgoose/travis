@@ -12,7 +12,7 @@ const api = axios.create({
 })
 
 // Endpoints where a 401 means "wrong credentials / bad link", not "session expired".
-const AUTH_PATHS = ['/auth/login/', '/auth/join/', '/auth/refresh/']
+const AUTH_PATHS = ['/auth/login/', '/auth/join/', '/auth/refresh/', '/auth/passkeys/login/']
 
 type RetriableConfig = InternalAxiosRequestConfig & { _retried?: boolean }
 

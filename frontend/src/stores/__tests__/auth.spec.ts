@@ -32,9 +32,10 @@ describe('auth store', () => {
     apiPost.mockResolvedValue({ data: { access: makeToken(3600), refresh: makeToken(86400), user: visitor } })
     const store = useAuthStore()
 
-    await store.join({ token: 'abc', full_name: 'Maria Lopez' })
+    const payload = { token: 'abc', full_name: 'Maria Lopez', email: 'maria@example.com', password: 'pw' }
+    await store.join(payload)
 
-    expect(apiPost).toHaveBeenCalledWith('/api/v1/auth/join/', { token: 'abc', full_name: 'Maria Lopez' })
+    expect(apiPost).toHaveBeenCalledWith('/api/v1/auth/join/', payload)
     expect(store.isAuthenticated).toBe(true)
     expect(store.user?.name).toBe('Maria Lopez')
     expect(store.isFamily).toBe(false)
@@ -48,6 +49,29 @@ describe('auth store', () => {
     const store = useAuthStore()
     await store.login({ email: 'a@b.c', password: 'pw' })
     expect(store.isFamily).toBe(true)
+  })
+
+  it('family without a passkey session has no family powers and must set one up', async () => {
+    apiPost.mockResolvedValue({
+      data: {
+        access: makeToken(3600),
+        refresh: makeToken(86400),
+        user: { ...visitor, role: 'family', needs_passkey: true }
+      }
+    })
+    const store = useAuthStore()
+    await store.login({ email: 'a@b.c', password: 'pw' })
+    expect(store.isFamily).toBe(false)
+    expect(store.needsAccountSetup).toBe(true)
+  })
+
+  it('a visitor without a password must finish account setup', async () => {
+    apiPost.mockResolvedValue({
+      data: { access: makeToken(3600), refresh: makeToken(86400), user: { ...visitor, has_password: false } }
+    })
+    const store = useAuthStore()
+    await store.login({ email: 'a@b.c', password: 'pw' })
+    expect(store.needsAccountSetup).toBe(true)
   })
 
   it('loadFromStorage keeps the refresh token when only the access token expired', () => {

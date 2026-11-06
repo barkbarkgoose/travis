@@ -9,11 +9,14 @@ const authStore = useAuthStore()
 
 const token = computed(() => String(route.params.token ?? ''))
 const fullName = ref('')
+const email = ref('')
+const password = ref('')
 const isLoading = ref(false)
 const errorMessage = ref('')
 
 // Tapping the link again on a phone that's already signed in must not create a
-// second identity: attribution of notes and photos depends on one name per person.
+// second account: attribution of notes and photos depends on one name per person.
+// On a new device, people sign in with their email and password instead.
 const alreadySignedIn = ref(authStore.isAuthenticated)
 
 function continueAsCurrent() {
@@ -29,13 +32,21 @@ async function handleSubmit() {
   isLoading.value = true
   errorMessage.value = ''
   try {
-    await authStore.join({ token: token.value, full_name: fullName.value })
+    await authStore.join({
+      token: token.value,
+      full_name: fullName.value,
+      email: email.value,
+      password: password.value
+    })
     router.push('/dashboard')
   } catch (error: unknown) {
     const data = (error as { response?: { data?: Record<string, unknown> } })?.response?.data
-    const nameError = Array.isArray(data?.full_name) ? String(data?.full_name[0]) : ''
+    const firstError = (field: string) =>
+      Array.isArray(data?.[field]) ? String((data?.[field] as unknown[])[0]) : ''
     errorMessage.value =
-      nameError ||
+      firstError('full_name') ||
+      firstError('email') ||
+      firstError('password') ||
       (typeof data?.detail === 'string' ? data.detail : '') ||
       'Something went wrong. Please try again.'
   } finally {
@@ -100,6 +111,33 @@ async function handleSubmit() {
           who saw what.
         </p>
 
+        <label for="email-address" class="mt-6 block text-sm font-semibold text-ink">Email</label>
+        <input
+          id="email-address"
+          v-model="email"
+          type="email"
+          required
+          autocomplete="email"
+          class="mt-2 block w-full rounded-xl border border-line bg-white px-4 py-3 text-lg text-ink focus:border-primary focus:outline-none focus:ring-2 focus:ring-primary/30"
+        />
+
+        <label for="new-password" class="mt-6 block text-sm font-semibold text-ink">
+          Choose a password
+        </label>
+        <input
+          id="new-password"
+          v-model="password"
+          type="password"
+          required
+          minlength="8"
+          autocomplete="new-password"
+          class="mt-2 block w-full rounded-xl border border-line bg-white px-4 py-3 text-lg text-ink focus:border-primary focus:outline-none focus:ring-2 focus:ring-primary/30"
+        />
+        <p class="mt-2 text-sm text-muted">
+          At least 8 characters. Use your email and this password to sign in on your other
+          devices. You can add a passkey later for one-tap sign-in.
+        </p>
+
         <div v-if="errorMessage" class="mt-4 rounded-xl bg-warn-bg p-4" role="alert">
           <p class="text-sm text-warn">{{ errorMessage }}</p>
         </div>
@@ -109,9 +147,16 @@ async function handleSubmit() {
           :disabled="isLoading"
           class="mt-6 w-full rounded-xl bg-primary px-4 py-3 text-base font-semibold text-white hover:bg-primary-dark disabled:cursor-not-allowed disabled:opacity-50"
         >
-          {{ isLoading ? 'Joining…' : 'Continue' }}
+          {{ isLoading ? 'Creating your account…' : 'Create account' }}
         </button>
       </form>
+
+      <p v-if="!alreadySignedIn" class="mt-4 text-center text-sm text-muted">
+        Already have an account?
+        <router-link to="/login" class="font-semibold text-primary hover:text-primary-dark">
+          Sign in
+        </router-link>
+      </p>
     </div>
   </div>
 </template>

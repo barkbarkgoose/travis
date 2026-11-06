@@ -41,6 +41,13 @@ def _dev_cors_origins() -> list[str]:
 
 CORS_ALLOWED_ORIGINS = _dev_cors_origins()
 
+# Browsers allow passkeys on http only for "localhost", so use that rather than 127.0.0.1.
+WEBAUTHN_RP_ID = env("WEBAUTHN_RP_ID", default="localhost")
+WEBAUTHN_ORIGINS = env.list(
+    "WEBAUTHN_ORIGINS",
+    default=[o for o in CORS_ALLOWED_ORIGINS if o.startswith("http://localhost:")],
+)
+
 DATABASES = {
     "default": {
         "ENGINE": "django.db.backends.sqlite3",

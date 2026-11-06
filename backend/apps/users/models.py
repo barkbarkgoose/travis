@@ -92,9 +92,22 @@ class User(AbstractBaseUser, PermissionsMixin):
         ordering = ["-created_at"]
 
     @property
+    def has_family_role(self) -> bool:
+        return self.role == Role.FAMILY or self.is_superuser
+
+    @property
     def is_family(self) -> bool:
-        """Family accounts (and superusers) can see and manage everything."""
-        return self.is_active and (self.role == Role.FAMILY or self.is_superuser)
+        """Family accounts (and superusers) can see and manage everything.
+
+        Over the API, family powers also need a session that was opened with a
+        passkey: apps.users.authentication sets `passkey_session` from the token.
+        Paths that never set it (Django admin, shell, tests) are not limited here.
+        """
+        return (
+            self.is_active
+            and self.has_family_role
+            and getattr(self, "passkey_session", True)
+        )
 
 
 def new_invite_token() -> str:
@@ -130,3 +143,23 @@ class Invite(models.Model):
         if self.revoked_at is None:
             self.revoked_at = timezone.now()
             self.save(update_fields=["revoked_at"])
+
+
+class Passkey(models.Model):
+    """A WebAuthn credential. Required for family accounts, optional for visitors."""
+
+    user = models.ForeignKey(User, on_delete=models.CASCADE, related_name="passkeys")
+    # base64url of the raw credential id, as the browser sends it back.
+    credential_id = models.CharField(max_length=1024, unique=True)
+    public_key = models.BinaryField()
+    sign_count = models.PositiveBigIntegerField(default=0)
+    transports = models.JSONField(default=list, blank=True)
+    name = models.CharField(max_length=100, blank=True)
+    created_at = models.DateTimeField(auto_now_add=True)
+    last_used_at = models.DateTimeField(null=True, blank=True)
+
+    class Meta:
+        ordering = ["created_at"]
+
+    def __str__(self) -> str:
+        return self.name or f"Passkey {self.pk}"

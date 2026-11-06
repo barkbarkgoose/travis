@@ -108,11 +108,19 @@ ones above them.
   created once by `bootstrap_family`. Everything else hangs off it, and it's
   the hard boundary the app enforces: a query for "everyone's entries" is
   always scoped to one organization, never all of them.
-- **User** (`role`: `visitor` or `family`) — Visitors join through an invite
-  link with just their full name (no password — see `Invite` below); family
-  accounts log in with email/password and can see and manage everything in
-  the organization. The role lives in a real database column, on purpose —
-  see the security comment on `apps/users/models.py`.
+- **User** (`role`: `visitor` or `family`) — Accounts are only created
+  through the invite link (name, email, password); there is no open sign-up.
+  Everyone signs in with email + password, or a passkey. Family accounts can
+  see and manage everything in the organization, and **must use a passkey**:
+  once a family account has one, its password is refused at sign-in, and a
+  password-only session has no family powers until a passkey is added. The
+  role lives in a real database column, on purpose — see the security comment
+  on `apps/users/models.py`.
+- **Passkey** — A WebAuthn credential (`apps/users/passkeys.py`). Optional for
+  visitors; with one, they can change their own password (confirmed by the
+  passkey). Without one, a family admin resets passwords in the Django admin.
+  Deleting a family member's passkeys in the admin (User page) lets them sign
+  in with their password again to set up a new one.
 - **Invite** — The shareable join link. Rotating it invalidates the old one
   immediately; people who already joined keep their own accounts and stay
   signed in. `join/` is rate-limited.
@@ -153,7 +161,7 @@ sequenceDiagram
 
     Note over V,DB: 1. Joining
     V->>Vue: opens /join/<token>
-    Vue->>DJ: POST /api/v1/auth/join/ {token, full_name}
+    Vue->>DJ: POST /api/v1/auth/join/ {token, full_name, email, password}
     DJ->>DB: create User(role=visitor), issue JWTs
     DJ-->>Vue: access + refresh tokens
 
@@ -228,7 +236,13 @@ pnpm dev
 
 `bootstrap_family` is re-runnable — it reuses the organization if it exists
 and only sets a password on admins it actually creates, printing both the
-password and the join link.
+password and the join link. Sign in with that password once, and the app sends
+you to **Account** to add a passkey; after that, the password no longer works
+for that account.
+
+The Django admin's own login form is switched off: `/admin/` redirects to the
+app's `/admin-signin`, which opens an admin session for staff signed in with a
+passkey (or use **Account → Open admin**).
 
 ### Secrets: the encrypted keychain
 
@@ -257,6 +271,15 @@ unrecoverable. Rotate it with `python -m keychain rotate-key`.
 | `MAX_CONCURRENT_VISITORS` | `3` | Calendar capacity rule |
 | `JWT_ACCESS_TOKEN_LIFETIME_MINUTES` | `60` | |
 | `JWT_REFRESH_TOKEN_LIFETIME_DAYS` | `60` | Long on purpose — visitors join by link on their phones and the refresh endpoint slides the session forward each time it's used |
+
+Passkey settings are read from `.env` only. Production defaults work when the
+first `ALLOWED_HOSTS` entry is the public hostname:
+
+| `.env` setting | Default | Notes |
+|---|---|---|
+| `WEBAUTHN_RP_ID` | first `ALLOWED_HOSTS` entry (`localhost` in dev) | The hostname passkeys are bound to. **Changing it orphans every saved passkey.** |
+| `WEBAUTHN_ORIGINS` | `https://<WEBAUTHN_RP_ID>` (dev: the `http://localhost:*` CORS origins) | Comma-separated |
+| `WEBAUTHN_RP_NAME` | `Travis's Recovery` | Shown in the browser's passkey prompt |
 
 ### Project structure
 
@@ -292,17 +315,28 @@ travis-recovery/
 
 ### API reference
 
-All endpoints are under `/api/v1/`. Everything except `join/`, `login/`, and
-`refresh/` requires a Bearer token.
+All endpoints are under `/api/v1/`. Everything except `join/`, `login/`,
+`refresh/`, `passkeys/auth/options/` and `passkeys/login/` requires a Bearer
+token. Passkey calls come in pairs: an `options/` call returns WebAuthn options
+plus a signed `state` (valid 5 minutes), which goes back with the browser's
+credential.
 
 **Auth** (`/api/v1/auth/`)
 
 | Endpoint | Method | Who | Description |
 |---|---|---|---|
-| `join/` | POST | Anyone with a valid token (throttled) | Full name + invite token → JWTs, creates a visitor account |
+| `join/` | POST | Anyone with a valid token (throttled) | Invite token + full name + email + password → JWTs, creates a visitor account. The only way to create an account |
 | `invite/` | GET / POST | Family | Read the current invite link / rotate it (revokes the old one) |
-| `login/` | POST | Anyone | Email + password → JWTs (family accounts only) |
-| `refresh/` | POST | Anyone with a refresh token | New access + refresh pair; rejects deactivated users |
+| `login/` | POST | Anyone (throttled) | Email + password → JWTs. Refused (`code: passkey_required`) for family accounts that have a passkey |
+| `refresh/` | POST | Anyone with a refresh token | New access + refresh pair; rejects deactivated users; keeps the passkey mark |
+| `passkeys/auth/options/` | POST | Anyone (throttled) | Start a passkey prompt (limited to your own passkeys when signed in) |
+| `passkeys/login/` | POST | Anyone (throttled) | `{state, credential}` → JWTs marked as a passkey session |
+| `passkeys/register/options/` | POST | Authenticated | Start adding a passkey. Needs a passkey session if you already have one |
+| `passkeys/` | GET / POST | Authenticated | List your passkeys / save one (`{state, credential, name?}`) → also returns fresh passkey-session JWTs |
+| `passkeys/:id/` | DELETE | Owner, passkey session | Family can't remove their last passkey |
+| `password/` | POST | Authenticated | `{state, credential, new_password}`: change your password, confirmed with one of your passkeys |
+| `account/` | POST | Authenticated, no password yet | `{email, password}` for visitors who joined before passwords existed |
+| `admin-session/` | POST | Staff, passkey session | Opens a Django admin session cookie |
 | `settings/` | GET / PATCH | Authenticated | Per-user settings — inherited from the boilerplate, currently unused by this app's UI |
 
 **Journal** (`/api/v1/journal/`)

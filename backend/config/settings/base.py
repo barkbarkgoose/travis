@@ -180,13 +180,13 @@ CORS_ALLOWED_ORIGINS = _keychain_or_env_list(
 # REST Framework
 REST_FRAMEWORK = {
     "DEFAULT_AUTHENTICATION_CLASSES": (
-        "rest_framework_simplejwt.authentication.JWTAuthentication",
+        "apps.users.authentication.PasskeyAwareJWTAuthentication",
     ),
     "DEFAULT_PERMISSION_CLASSES": ("rest_framework.permissions.IsAuthenticated",),
     "DEFAULT_PAGINATION_CLASS": "rest_framework.pagination.PageNumberPagination",
     "PAGE_SIZE": 20,
     "DEFAULT_RENDERER_CLASSES": ("rest_framework.renderers.JSONRenderer",),
-    "DEFAULT_THROTTLE_RATES": {"join": "10/min"},
+    "DEFAULT_THROTTLE_RATES": {"join": "10/min", "login": "10/min"},
     # Number of reverse proxies in front of Django (0 in dev, 1 behind nginx).
     # Without it every visitor shares the proxy's IP for throttling.
     "NUM_PROXIES": env.int("NUM_PROXIES", default=0),
@@ -223,6 +223,13 @@ SIMPLE_JWT = {
     "ACCESS_TOKEN_LIFETIME": _ACCESS_LIFETIME,
     "REFRESH_TOKEN_LIFETIME": _REFRESH_LIFETIME,
 }
+
+# Passkeys (WebAuthn). The RP ID is the bare hostname passkeys are bound to;
+# changing it later orphans every saved passkey. Defaults to the first
+# ALLOWED_HOSTS entry, served over https.
+WEBAUTHN_RP_ID = env("WEBAUTHN_RP_ID", default=ALLOWED_HOSTS[0] if ALLOWED_HOSTS else "localhost")
+WEBAUTHN_RP_NAME = env("WEBAUTHN_RP_NAME", default="Travis's Recovery")
+WEBAUTHN_ORIGINS = env.list("WEBAUTHN_ORIGINS", default=[f"https://{WEBAUTHN_RP_ID}"])
 
 # User settings / secrets-at-rest encryption. Optional: when unset, the users
 # crypto helper falls back to keychain.key and then to a SHA-256 derivation of

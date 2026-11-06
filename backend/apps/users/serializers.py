@@ -3,10 +3,12 @@
 import re
 
 from django.contrib.auth import get_user_model
+from django.contrib.auth.password_validation import validate_password
 from rest_framework import serializers
 
 from apps.organizations.models import Organization
 from apps.users.crypto import decrypt_secret, encrypt_secret
+from apps.users.models import Passkey
 
 User = get_user_model()
 
@@ -129,13 +131,52 @@ class UserSerializer(serializers.ModelSerializer):
 
     organization = OrganizationSerializer(read_only=True)
     settings = serializers.SerializerMethodField()
+    has_password = serializers.SerializerMethodField()
+    passkey_count = serializers.SerializerMethodField()
+    needs_passkey = serializers.SerializerMethodField()
 
     class Meta:
         model = User
-        fields = ["id", "email", "name", "role", "organization", "settings"]
+        fields = [
+            "id",
+            "email",
+            "name",
+            "role",
+            "organization",
+            "settings",
+            "has_password",
+            "passkey_count",
+            "needs_passkey",
+        ]
 
     def get_settings(self, obj):
         return format_safe_user_settings(obj.settings or {})
+
+    def get_has_password(self, obj) -> bool:
+        return obj.has_usable_password()
+
+    def get_passkey_count(self, obj) -> int:
+        return obj.passkeys.count()
+
+    def get_needs_passkey(self, obj) -> bool:
+        """Family account whose current session wasn't opened with a passkey."""
+        return obj.has_family_role and not getattr(obj, "passkey_session", False)
+
+
+def _validate_new_email(value: str) -> str:
+    email = User.objects.normalize_email(value).strip()
+    if User.objects.filter(email__iexact=email).exists():
+        raise serializers.ValidationError(
+            "An account with this email already exists. Sign in instead."
+        )
+    return email
+
+
+def _validate_new_password(password: str, *, email: str, name: str = "") -> None:
+    try:
+        validate_password(password, User(email=email, name=name))
+    except Exception as exc:  # django ValidationError
+        raise serializers.ValidationError({"password": list(exc.messages)}) from exc
 
 
 class JoinSerializer(serializers.Serializer):
@@ -147,12 +188,65 @@ class JoinSerializer(serializers.Serializer):
 
     token = serializers.CharField(max_length=128)
     full_name = serializers.CharField(max_length=255)
+    email = serializers.EmailField()
+    password = serializers.CharField(write_only=True, max_length=128)
 
     def validate_full_name(self, value: str) -> str:
         name = " ".join(value.split())
         if len(name.split(" ")) < 2:
             raise serializers.ValidationError("Please enter your first and last name.")
         return name
+
+    def validate_email(self, value: str) -> str:
+        return _validate_new_email(value)
+
+    def validate(self, attrs):
+        _validate_new_password(
+            attrs["password"], email=attrs["email"], name=attrs["full_name"]
+        )
+        return attrs
+
+
+class ClaimAccountSerializer(serializers.Serializer):
+    """Add an email and password to a visitor who joined before passwords existed."""
+
+    email = serializers.EmailField()
+    password = serializers.CharField(write_only=True, max_length=128)
+
+    def validate_email(self, value: str) -> str:
+        return _validate_new_email(value)
+
+    def validate(self, attrs):
+        user = self.context["request"].user
+        _validate_new_password(attrs["password"], email=attrs["email"], name=user.name)
+        return attrs
+
+
+class PasskeyCeremonySerializer(serializers.Serializer):
+    """The signed state from an options call plus the browser's credential JSON."""
+
+    state = serializers.CharField(max_length=2048)
+    credential = serializers.DictField()
+
+
+class PasskeyRegisterSerializer(PasskeyCeremonySerializer):
+    name = serializers.CharField(max_length=100, required=False, allow_blank=True)
+
+
+class ChangePasswordSerializer(PasskeyCeremonySerializer):
+    new_password = serializers.CharField(write_only=True, max_length=128)
+
+    def validate(self, attrs):
+        user = self.context["request"].user
+        _validate_new_password(attrs["new_password"], email=user.email, name=user.name)
+        return attrs
+
+
+class PasskeySerializer(serializers.ModelSerializer):
+    class Meta:
+        model = Passkey
+        fields = ["id", "name", "created_at", "last_used_at"]
+        read_only_fields = fields
 
 
 class LoginSerializer(serializers.Serializer):

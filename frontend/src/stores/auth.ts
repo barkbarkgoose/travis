@@ -19,6 +19,7 @@ import {
 } from '@/utils/authStorage'
 import api from '@/services/api'
 import { refreshAccessToken } from '@/services/session'
+import { createPasskey, signInWithPasskey } from '@/services/passkeys'
 
 export const useAuthStore = defineStore('auth', () => {
   const token = ref<string | null>(null)
@@ -26,7 +27,12 @@ export const useAuthStore = defineStore('auth', () => {
   const userSettings = ref<UserSettings | null>(null)
 
   const isAuthenticated = computed(() => !!token.value && !isTokenExpired(token.value))
-  const isFamily = computed(() => user.value?.role === 'family')
+  // Family powers need a passkey session; the backend enforces the same rule.
+  const isFamily = computed(() => user.value?.role === 'family' && !user.value?.needs_passkey)
+  /** Something on the account page has to be done before the rest of the app. */
+  const needsAccountSetup = computed(
+    () => !!user.value && (!!user.value.needs_passkey || user.value.has_password === false)
+  )
 
   function clearAuthState(): void {
     token.value = null
@@ -114,27 +120,41 @@ export const useAuthStore = defineStore('auth', () => {
     }
   }
 
-  async function login(credentials: LoginCredentials): Promise<void> {
-    const response = await api.post<LoginResponse>('/api/v1/auth/login/', credentials)
-    token.value = response.data.access
-    localStorage.setItem(TOKEN_KEY, response.data.access)
-    if (response.data.refresh) {
-      localStorage.setItem(REFRESH_KEY, response.data.refresh)
+  function startSession(data: LoginResponse): void {
+    token.value = data.access
+    localStorage.setItem(TOKEN_KEY, data.access)
+    if (data.refresh) {
+      localStorage.setItem(REFRESH_KEY, data.refresh)
     }
-    if (response.data.user) {
-      storeUser(response.data.user)
+    if (data.user) {
+      storeUser(data.user)
     }
   }
 
-  /** Sign in as a visitor through a shared invite link. */
+  async function login(credentials: LoginCredentials): Promise<void> {
+    const response = await api.post<LoginResponse>('/api/v1/auth/login/', credentials)
+    startSession(response.data)
+  }
+
+  async function loginWithPasskey(): Promise<void> {
+    startSession(await signInWithPasskey())
+  }
+
+  /** Save a new passkey. The backend answers with a fresh passkey session. */
+  async function addPasskey(name = ''): Promise<void> {
+    startSession(await createPasskey(name))
+  }
+
+  /** Sign up through a shared invite link: the only way to create an account. */
   async function join(payload: JoinRequest): Promise<void> {
     const response = await api.post<JoinResponse>('/api/v1/auth/join/', payload)
-    token.value = response.data.access
-    localStorage.setItem(TOKEN_KEY, response.data.access)
-    localStorage.setItem(REFRESH_KEY, response.data.refresh)
-    if (response.data.user) {
-      storeUser(response.data.user)
-    }
+    startSession(response.data)
+  }
+
+  /** Give an email and password to a visitor who joined before passwords existed. */
+  async function claimAccount(email: string, password: string): Promise<void> {
+    const response = await api.post<User>('/api/v1/auth/account/', { email, password })
+    storeUser({ ...user.value, ...response.data })
   }
 
   /**
@@ -163,13 +183,18 @@ export const useAuthStore = defineStore('auth', () => {
     userSettings,
     isAuthenticated,
     isFamily,
+    needsAccountSetup,
+    storeUser,
     loadFromStorage,
     restoreSession,
     fetchUserSettings,
     updateUserSettings,
     saveApiKey,
     login,
+    loginWithPasskey,
+    addPasskey,
     join,
+    claimAccount,
     logout
   }
 })
